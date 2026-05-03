@@ -1,0 +1,1 @@
+"""Shield AI CLI package."""

@@ -1,0 +1,144 @@
+"""
+scan command — core entry point for local security analysis.
+
+Runs the scanner pipeline on a given path and renders findings
+to the terminal using Rich. No API calls in Phase 0.
+
+Usage:
+    shield scan ./myproject
+    shield scan ./myproject --format json
+    shield scan ./myproject --severity high
+"""
+
+from __future__ import annotations
+
+import time
+from enum import Enum
+from pathlib import Path
+from typing import Annotated
+
+import typer
+from rich.console import Console
+from rich.progress import Progress, SpinnerColumn, TextColumn
+
+from shield.core.output import Severity
+from shield.formatters.terminal import render_findings_table
+from shield.normalizer_stub import NormalizedFinding, get_stub_findings
+
+app = typer.Typer()
+console = Console()
+
+
+class OutputFormat(str, Enum):
+    """Supported output formats for scan results."""
+
+    terminal = "terminal"
+    json = "json"
+    sarif = "sarif"
+
+
+def _resolve_target(path: str) -> Path:
+    """Resolve and validate the scan target path.
+
+    Args:
+        path: Raw string path provided by the user.
+
+    Returns:
+        Resolved absolute Path object.
+
+    Raises:
+        typer.BadParameter: If the path does not exist.
+    """
+    resolved = Path(path).resolve()
+    if not resolved.exists():
+        raise typer.BadParameter(f"Path does not exist: {resolved}")
+    return resolved
+
+
+def _output_json(findings: list[NormalizedFinding]) -> None:
+    """Serialize findings to JSON and print to stdout.
+
+    Args:
+        findings: List of normalized findings to serialize.
+    """
+    import json
+    from dataclasses import asdict
+
+    console.print_json(json.dumps([asdict(f) for f in findings], default=str))
+
+
+@app.callback(invoke_without_command=True)
+def scan(
+    path: Annotated[
+        str,
+        typer.Argument(help="Path to the project or file to scan."),
+    ] = ".",
+    output_format: Annotated[
+        OutputFormat,
+        typer.Option("--format", "-f", help="Output format: terminal, json, sarif."),
+    ] = OutputFormat.terminal,
+    min_severity: Annotated[
+        str,
+        typer.Option(
+            "--severity",
+            "-s",
+            help="Minimum severity to display: critical, high, medium, low, info.",
+        ),
+    ] = "info",
+    verbose: Annotated[
+        bool,
+        typer.Option("--verbose", "-v", help="Show verbose output including skipped files."),
+    ] = False,
+) -> None:
+    """Run a security scan on the given path.
+
+    Executes the full scanner pipeline (secrets, bandit, semgrep, pip-audit)
+    in parallel and renders normalized findings to the terminal.
+
+    In Phase 0, this runs a stub pipeline with no real tool execution.
+    Real scanners are wired in Phase 1.
+    """
+    target = _resolve_target(path)
+
+    if verbose:
+        console.print(f"[dim]Resolved target: {target}[/dim]")
+
+    console.print(f"\n[bold green]Shield AI[/bold green] — scanning [cyan]{target}[/cyan]\n")
+
+    findings: list[NormalizedFinding] = []
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+        transient=True,  # clears spinner after completion
+    ) as progress:
+        # Phase 0: stub tasks — replaced by real runners in Phase 1
+        task = progress.add_task("[yellow]Detecting secrets...[/yellow]", total=None)
+        time.sleep(0.4)
+        progress.update(task, description="[yellow]Running static analysis...[/yellow]")
+        time.sleep(0.4)
+        progress.update(task, description="[yellow]Checking dependencies...[/yellow]")
+        time.sleep(0.3)
+        progress.update(task, description="[green]Normalizing findings...[/green]")
+        time.sleep(0.2)
+
+        # Phase 0 stub: returns empty list (real pipeline in Phase 1)
+        findings = get_stub_findings(target)
+
+    # Filter by minimum severity
+    sev_order = ["info", "low", "medium", "high", "critical"]
+    min_idx = sev_order.index(min_severity.lower()) if min_severity.lower() in sev_order else 0
+    filtered = [f for f in findings if sev_order.index(f.severity.value.lower()) >= min_idx]
+
+    if output_format == OutputFormat.terminal:
+        render_findings_table(filtered, target=str(target), console=console)
+    elif output_format == OutputFormat.json:
+        _output_json(filtered)
+    elif output_format == OutputFormat.sarif:
+        console.print("[yellow]SARIF output coming in Phase 1.[/yellow]")
+
+    # Exit code 1 if any HIGH or CRITICAL findings (for CI gate integration)
+    high_or_critical = [f for f in filtered if f.severity in (Severity.HIGH, Severity.CRITICAL)]
+    if high_or_critical:
+        raise typer.Exit(code=1)
