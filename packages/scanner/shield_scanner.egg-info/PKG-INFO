@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: shield-scanner
+Version: 0.1.0
+Summary: Shield AI scanner pipeline — secret, static analysis, and dependency detectors.
+License: MIT
+Requires-Python: >=3.12

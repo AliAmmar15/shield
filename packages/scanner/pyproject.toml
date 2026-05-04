@@ -1,0 +1,26 @@
+# Shield scanner package configuration.
+# Provides the scan orchestration pipeline and all detector wrappers.
+# Importable as `scanner` namespace: from scanner.detectors.secrets import SecretsDetector
+# Source lives in packages/scanner/scanner/ (standard src-adjacent layout).
+# In Phase 1, this becomes a uv workspace source dependency in apps/cli.
+
+[project]
+name = "shield-scanner"
+version = "0.1.0"
+description = "Shield AI scanner pipeline — secret, static analysis, and dependency detectors."
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = []  # no runtime deps — all tools are subprocess-wrapped
+
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+# scanner/ subdirectory is the Python package root.
+# pip install -e packages/scanner makes `scanner` importable directly.
+[tool.setuptools]
+packages = ["scanner", "scanner.detectors"]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"

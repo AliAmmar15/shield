@@ -4,6 +4,11 @@ scan command — core entry point for local security analysis.
 Runs the scanner pipeline on a given path and renders findings
 to the terminal using Rich. No API calls in Phase 0.
 
+Phase 0 pipeline:
+  1. SecretsDetector (trufflehog v3 or entropy fallback)
+  2. NormalizedFinding conversion (normalizer_stub)
+  3. Severity filter + terminal/json/sarif output
+
 Usage:
     shield scan ./myproject
     shield scan ./myproject --format json
@@ -12,7 +17,6 @@ Usage:
 
 from __future__ import annotations
 
-import time
 from enum import Enum
 from pathlib import Path
 from typing import Annotated
@@ -92,11 +96,8 @@ def scan(
 ) -> None:
     """Run a security scan on the given path.
 
-    Executes the full scanner pipeline (secrets, bandit, semgrep, pip-audit)
-    in parallel and renders normalized findings to the terminal.
-
-    In Phase 0, this runs a stub pipeline with no real tool execution.
-    Real scanners are wired in Phase 1.
+    Phase 0 pipeline: secrets detection only (trufflehog v3 or entropy fallback).
+    Phase 1 will add: Bandit, Semgrep, pip-audit, parallel execution.
     """
     target = _resolve_target(path)
 
@@ -111,20 +112,16 @@ def scan(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         console=console,
-        transient=True,  # clears spinner after completion
+        transient=True,  # clears the spinner line after completion
     ) as progress:
-        # Phase 0: stub tasks — replaced by real runners in Phase 1
         task = progress.add_task("[yellow]Detecting secrets...[/yellow]", total=None)
-        time.sleep(0.4)
-        progress.update(task, description="[yellow]Running static analysis...[/yellow]")
-        time.sleep(0.4)
-        progress.update(task, description="[yellow]Checking dependencies...[/yellow]")
-        time.sleep(0.3)
-        progress.update(task, description="[green]Normalizing findings...[/green]")
-        time.sleep(0.2)
 
-        # Phase 0 stub: returns empty list (real pipeline in Phase 1)
+        # Phase 0: secrets detection only.
+        # get_stub_findings() calls run_secrets_scan() → SecretsDetector.scan().
+        # trufflehog is used if installed; entropy fallback runs otherwise.
         findings = get_stub_findings(target)
+
+        progress.update(task, description="[green]Scan complete.[/green]")
 
     # Filter by minimum severity
     sev_order = ["info", "low", "medium", "high", "critical"]
