@@ -139,10 +139,9 @@ jobs:
         # Delete this step if you don't want findings in the Security tab on CI.
         if: always()
         uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true  # don't fail CI if upload is not available on free tier
         with:
           sarif_file: /tmp/ci-smoke.sarif
-        # Requires `security-events: write` permission — see permissions block below.
-        continue-on-error: true  # don't fail CI if upload is not available on free tier
 
 # Grant minimum permissions required for SARIF upload.
 # Read-only for all other scopes.
