@@ -23,8 +23,8 @@ shield = "shield.main:app"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "ruff>=0.4.0",            # Replaces black + isort + flake8 — do NOT add those
     "mypy>=1.10.0",           # Strict type checking
     "pytest>=8.2.0",
