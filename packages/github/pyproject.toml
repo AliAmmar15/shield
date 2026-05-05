@@ -1,0 +1,20 @@
+# Shield GitHub integration package configuration.
+# Phase 0 stub — Python files live directly in this directory root.
+# Phase 2: move files into a github_integration/ subdirectory and update packages value.
+# Note: "github" is reserved by PyGithub — do NOT use packages = ["github"].
+
+[project]
+name = "shield-github"
+version = "0.1.0"
+description = "Shield AI — GitHub App integration for PR review and inline comments (Phase 3+)."
+requires-python = ">=3.12"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+# No packages yet — files are at root, not in a named subdirectory.
+# Phase 3: rename to github_integration/ and set packages = ["github_integration"].
+packages = []
