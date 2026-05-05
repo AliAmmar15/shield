@@ -19,17 +19,21 @@ from __future__ import annotations
 
 from enum import Enum
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Optional
 
 import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from shield.core.output import Severity
+from shield.formatters.sarif import to_sarif, write_sarif
 from shield.formatters.terminal import render_findings_table
 from shield.normalizer_stub import NormalizedFinding, get_stub_findings
 
-app = typer.Typer()
+# allow_interspersed_args=True lets users place options after the path argument:
+#   shield scan ./project --sarif   (instead of requiring: shield scan --sarif ./project)
+# Click groups disable interspersed args by default; we opt back in here.
+app = typer.Typer(context_settings={"allow_interspersed_args": True})
 console = Console()
 
 
@@ -93,6 +97,21 @@ def scan(
         bool,
         typer.Option("--verbose", "-v", help="Show verbose output including skipped files."),
     ] = False,
+    sarif: Annotated[
+        bool,
+        typer.Option(
+            "--sarif",
+            help="Write findings to a SARIF file (default: shield-results.sarif).",
+        ),
+    ] = False,
+    output: Annotated[
+        Optional[Path],
+        typer.Option(
+            "--output",
+            "-o",
+            help="Output path for the SARIF file. Implies --sarif when set.",
+        ),
+    ] = None,
 ) -> None:
     """Run a security scan on the given path.
 
@@ -133,7 +152,19 @@ def scan(
     elif output_format == OutputFormat.json:
         _output_json(filtered)
     elif output_format == OutputFormat.sarif:
-        console.print("[yellow]SARIF output coming in Phase 1.[/yellow]")
+        # --format sarif: print SARIF JSON to stdout (for piping / CI consumption)
+        import json as _json
+
+        console.print_json(_json.dumps(to_sarif(filtered, str(target))))
+
+    # --sarif flag (or -o path): write SARIF to a file in addition to terminal output
+    write_sarif_file = sarif or output is not None
+    if write_sarif_file:
+        sarif_path = output if output is not None else Path("shield-results.sarif")
+        write_sarif(filtered, sarif_path, scan_path=str(target))
+        console.print(
+            f"\n[dim]SARIF report written to[/dim] [cyan]{sarif_path}[/cyan]"
+        )
 
     # Exit code 1 if any HIGH or CRITICAL findings (for CI gate integration)
     high_or_critical = [f for f in filtered if f.severity in (Severity.HIGH, Severity.CRITICAL)]

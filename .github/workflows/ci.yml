@@ -1,0 +1,154 @@
+# Shield AI — CI Pipeline
+# Runs on every push to main and every pull request targeting main.
+#
+# All three jobs (lint, typecheck, test) MUST pass before a PR can be merged.
+# Enforce this by enabling the following branch protection rules on `main`:
+#   Settings → Branches → main → "Require status checks to pass before merging"
+#   Required checks: lint, typecheck, test
+#
+# Job dependency graph (all run in parallel — no sequential blocking):
+#   lint ──┐
+#          ├── merge gate
+#   typecheck ─┤
+#          ├── merge gate
+#   test ──┘
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel in-progress runs on the same branch when a new push arrives.
+# Prevents wasted runner minutes on stale commits.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1: Lint — ruff check + ruff format
+  # ---------------------------------------------------------------------------
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+          # Cache the uv package cache between runs for faster installs.
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        # sync installs all workspace members' dev dependencies declared
+        # in [tool.uv] dev-dependencies in each pyproject.toml.
+        run: uv sync --all-extras --dev
+
+      - name: Check linting (ruff check)
+        run: uv run ruff check .
+
+      - name: Check formatting (ruff format)
+        run: uv run ruff format --check .
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Type check — mypy strict
+  # ---------------------------------------------------------------------------
+  typecheck:
+    name: Type check (mypy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Run mypy (strict)
+        # Scoped to apps/cli/shield — the only production Python package in Phase 0.
+        # Phase 1 will extend this to packages/scanner, packages/normalizer.
+        run: uv run mypy apps/cli/shield --strict --ignore-missing-imports
+
+  # ---------------------------------------------------------------------------
+  # Job 3: Test — pytest + smoke test
+  # ---------------------------------------------------------------------------
+  test:
+    name: Test (pytest + smoke)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        # --all-extras installs optional dependency groups.
+        # apps/cli and packages/scanner are installed as editable workspace packages.
+        run: uv sync --all-extras --dev
+
+      - name: Install shield-scanner (editable)
+        # packages/scanner is a setuptools package outside the uv workspace graph.
+        # Install it explicitly so scanner.detectors.secrets is importable in tests.
+        run: uv run pip install -e packages/scanner
+
+      - name: Run tests
+        run: uv run pytest apps/cli/tests/ -v --tb=short
+
+      - name: Smoke test — shield scan CLI
+        # Verifies the CLI entry point, Rich output, SARIF writer, and entropy
+        # fallback all work end-to-end on a clean directory. Exit code must be 0.
+        run: |
+          uv run shield scan ./apps/cli --sarif -o /tmp/ci-smoke.sarif
+          # Confirm the SARIF file was written and has expected schema key
+          grep -q '"version": "2.1.0"' /tmp/ci-smoke.sarif
+          echo "Smoke test passed."
+
+      - name: Upload SARIF to GitHub Security tab
+        # Only runs when scanning finds issues (non-zero exit) or always for
+        # visibility. Using `if: always()` ensures upload even when test exits 1.
+        # Delete this step if you don't want findings in the Security tab on CI.
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: /tmp/ci-smoke.sarif
+        # Requires `security-events: write` permission — see permissions block below.
+        continue-on-error: true  # don't fail CI if upload is not available on free tier
+
+# Grant minimum permissions required for SARIF upload.
+# Read-only for all other scopes.
+permissions:
+  contents: read
+  security-events: write
