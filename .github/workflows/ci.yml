@@ -128,7 +128,7 @@ jobs:
         # Verifies the CLI entry point, Rich output, SARIF writer, and entropy
         # fallback all work end-to-end on a clean directory. Exit code must be 0.
         run: |
-          uv run shield scan ./apps/cli --sarif -o /tmp/ci-smoke.sarif
+          uv run shield scan ./apps/cli/shield --sarif -o /tmp/ci-smoke.sarif
           # Confirm the SARIF file was written and has expected schema key
           grep -q '"version": "2.1.0"' /tmp/ci-smoke.sarif
           echo "Smoke test passed."

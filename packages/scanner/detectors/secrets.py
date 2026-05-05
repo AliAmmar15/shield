@@ -139,16 +139,12 @@ _SECRET_PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
     ),
     (
         "jwt-hardcoded",
-        re.compile(
-            r"\b(eyJ[A-Za-z0-9\-_]+\.eyJ[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+)\b"
-        ),
+        re.compile(r"\b(eyJ[A-Za-z0-9\-_]+\.eyJ[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+)\b"),
         "Hardcoded JWT token found in source — never commit live tokens to version control",
     ),
     (
         "pem-private-key",
-        re.compile(
-            r"-----BEGIN\s+(?:RSA\s+|EC\s+|OPENSSH\s+|DSA\s+)?PRIVATE KEY-----"
-        ),
+        re.compile(r"-----BEGIN\s+(?:RSA\s+|EC\s+|OPENSSH\s+|DSA\s+)?PRIVATE KEY-----"),
         "PEM Private Key block detected — never commit private keys to version control",
     ),
     (
@@ -194,12 +190,12 @@ class RawFinding:
     packages/scanner has zero runtime dependency on apps/cli.
     """
 
-    tool: str          # "secrets" | "bandit" | "semgrep" | "pip-audit"
-    rule_id: str       # e.g. "aws-access-key-id", "trufflehog-aws"
-    file: str          # absolute path string
-    line: int          # 1-indexed line number
-    severity: str      # "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INFO"
-    message: str       # human-readable description of the finding
+    tool: str  # "secrets" | "bandit" | "semgrep" | "pip-audit"
+    rule_id: str  # e.g. "aws-access-key-id", "trufflehog-aws"
+    file: str  # absolute path string
+    line: int  # 1-indexed line number
+    severity: str  # "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INFO"
+    message: str  # human-readable description of the finding
     code_snippet: str  # redacted source line — never store plaintext secrets here
     metadata: dict[str, Any] = field(default_factory=dict)
 
@@ -227,9 +223,7 @@ def _shannon_entropy(data: str) -> float:
         return 0.0
     counts = Counter(data)
     length = len(data)
-    return -sum(
-        (count / length) * math.log2(count / length) for count in counts.values()
-    )
+    return -sum((count / length) * math.log2(count / length) for count in counts.values())
 
 
 def _redact_line(line: str, secret: str) -> str:
@@ -337,9 +331,7 @@ class SecretsDetector:
                 timeout=120,  # 2-minute cap — generous for large repos
             )
         except subprocess.TimeoutExpired:
-            logger.warning(
-                "trufflehog timed out after 120s — falling back to entropy scanner"
-            )
+            logger.warning("trufflehog timed out after 120s — falling back to entropy scanner")
             return self._entropy_scan(target)
         except FileNotFoundError:
             # Handles the edge case where trufflehog is removed between the
@@ -379,9 +371,7 @@ class SecretsDetector:
             # SourceMetadata structure:
             # {"Data": {"Filesystem": {"file": "/path", "line": 10}}}
             source_data: dict[str, Any] = (
-                obj.get("SourceMetadata", {})
-                .get("Data", {})
-                .get("Filesystem", {})
+                obj.get("SourceMetadata", {}).get("Data", {}).get("Filesystem", {})
             )
             file_path = str(source_data.get("file", "unknown"))
             line_num = int(source_data.get("line", 1))

@@ -162,9 +162,7 @@ def scan(
     if write_sarif_file:
         sarif_path = output if output is not None else Path("shield-results.sarif")
         write_sarif(filtered, sarif_path, scan_path=str(target))
-        console.print(
-            f"\n[dim]SARIF report written to[/dim] [cyan]{sarif_path}[/cyan]"
-        )
+        console.print(f"\n[dim]SARIF report written to[/dim] [cyan]{sarif_path}[/cyan]")
 
     # Exit code 1 if any HIGH or CRITICAL findings (for CI gate integration)
     high_or_critical = [f for f in filtered if f.severity in (Severity.HIGH, Severity.CRITICAL)]

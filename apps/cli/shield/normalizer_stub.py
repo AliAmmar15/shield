@@ -62,11 +62,11 @@ class NormalizedFinding:
     are added in Phase 2 when the AI engine is wired in.
     """
 
-    id: str                           # deterministic: hash(tool+file+line+rule_id)
-    tool: str                         # "bandit" | "semgrep" | "secrets" | "pip-audit"
+    id: str  # deterministic: hash(tool+file+line+rule_id)
+    tool: str  # "bandit" | "semgrep" | "secrets" | "pip-audit"
     rule_id: str
-    cwe: list[str]                    # e.g. ["CWE-89"]
-    owasp: list[str]                  # e.g. ["A03:2021"]
+    cwe: list[str]  # e.g. ["CWE-89"]
+    owasp: list[str]  # e.g. ["A03:2021"]
     severity: Severity
     confidence: Confidence
     file: str
@@ -175,8 +175,8 @@ def _raw_to_normalized(raw: _RawFindingLike) -> NormalizedFinding:
         id=finding_id,
         tool=raw.tool,
         rule_id=raw.rule_id,
-        cwe=["CWE-798"],      # Use of Hard-coded Credentials
-        owasp=["A07:2021"],   # Identification and Authentication Failures
+        cwe=["CWE-798"],  # Use of Hard-coded Credentials
+        owasp=["A07:2021"],  # Identification and Authentication Failures
         severity=severity,
         confidence=Confidence.HIGH,
         file=raw.file,
