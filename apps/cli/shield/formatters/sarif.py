@@ -18,10 +18,12 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from shield.core.output import Severity
-from shield.normalizer_stub import NormalizedFinding
+
+if TYPE_CHECKING:
+    from shield.normalizer_stub import NormalizedFinding
 
 # ---------------------------------------------------------------------------
 # Constants

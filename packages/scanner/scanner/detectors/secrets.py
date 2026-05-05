@@ -26,8 +26,11 @@ import re
 import subprocess
 from collections import Counter
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Any, Iterator
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+    from pathlib import Path
 
 logger = logging.getLogger(__name__)
 

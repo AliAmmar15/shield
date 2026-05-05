@@ -11,13 +11,15 @@ Tests cover:
 All tests are self-contained — no network calls, no external tools, no trufflehog.
 """
 
+# ruff: noqa: I001
+# Import order is intentional: scanner (package under test) is imported
+# after sys.path manipulation and before shield.* to match test grouping.
+
 from __future__ import annotations
 
 import sys
 import tempfile
 from pathlib import Path
-
-import pytest
 
 # ---------------------------------------------------------------------------
 # Path setup — ensure both packages are importable in CI.

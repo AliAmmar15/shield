@@ -20,10 +20,12 @@ import hashlib
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from pathlib import Path
-from typing import Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol
 
 from shield.core.output import Confidence, Severity
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -135,7 +137,7 @@ def run_secrets_scan(target: Path) -> list[NormalizedFinding]:
         # Lazy import — shield-scanner must be installed separately.
         # Run: pip install -e packages/scanner
         # In Phase 1, this becomes a uv workspace source dependency.
-        from scanner.detectors.secrets import SecretsDetector  # type: ignore[import-untyped]
+        from scanner.detectors.secrets import SecretsDetector  # noqa: PGH003
     except ImportError:
         logger.warning(
             "shield-scanner package not installed — secret detection disabled. "

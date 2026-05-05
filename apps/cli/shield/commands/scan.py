@@ -17,9 +17,9 @@ Usage:
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 
 import typer
 from rich.console import Console
@@ -37,7 +37,7 @@ app = typer.Typer(context_settings={"allow_interspersed_args": True})
 console = Console()
 
 
-class OutputFormat(str, Enum):
+class OutputFormat(StrEnum):
     """Supported output formats for scan results."""
 
     terminal = "terminal"
@@ -105,7 +105,7 @@ def scan(
         ),
     ] = False,
     output: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             "--output",
             "-o",

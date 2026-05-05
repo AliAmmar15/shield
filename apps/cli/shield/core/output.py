@@ -15,10 +15,10 @@ inline messages, progress indicators).
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 
-class Severity(str, Enum):
+class Severity(StrEnum):
     """Normalized severity levels across all scanner tools.
 
     Values map directly to the NormalizedFinding.severity field.
@@ -32,7 +32,7 @@ class Severity(str, Enum):
     INFO = "INFO"
 
 
-class Confidence(str, Enum):
+class Confidence(StrEnum):
     """Confidence level for a finding — reflects tool certainty, not severity."""
 
     HIGH = "HIGH"

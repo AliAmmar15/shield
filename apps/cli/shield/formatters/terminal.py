@@ -15,6 +15,7 @@ If no findings are present, prints a green success panel instead.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from rich.console import Console
 from rich.panel import Panel
@@ -22,7 +23,9 @@ from rich.table import Table
 from rich.text import Text
 
 from shield.core.output import SEVERITY_BADGES, SEVERITY_COLORS, Severity
-from shield.normalizer_stub import NormalizedFinding
+
+if TYPE_CHECKING:
+    from shield.normalizer_stub import NormalizedFinding
 
 
 def _truncate(text: str, max_len: int = 80) -> str:
