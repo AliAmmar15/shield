@@ -66,7 +66,7 @@ Shield is currently in active development. We are working through the following 
 | 2 | AI context + remediation engine | Planned |
 | 3 | GitHub PR integration | Planned |
 | 4 | Web dashboard | Planned |
-| 5 | open source | ⏳ Planned |
+| 5 | open source | Planned |
 
 ---
 
