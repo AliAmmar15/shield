@@ -6,6 +6,7 @@ detectors/secrets.py
 detectors/semgrep.py
 scanner/__init__.py
 scanner/detectors/__init__.py
+scanner/detectors/bandit.py
 scanner/detectors/secrets.py
 shield_scanner.egg-info/PKG-INFO
 shield_scanner.egg-info/SOURCES.txt
