@@ -61,12 +61,12 @@ Shield is currently in active development. We are working through the following 
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| 0 | CLI foundation + secret detection | 🔨 In Progress |
-| 1 | Full scanner pipeline + normalization | 🔜 Up Next |
-| 2 | AI context + remediation engine | ⏳ Planned |
-| 3 | GitHub PR integration | ⏳ Planned |
-| 4 | Web dashboard | ⏳ Planned |
-| 5 | Public launch + open source | ⏳ Planned |
+| 0 | CLI foundation + secret detection | Completed |
+| 1 | Full scanner pipeline + normalization | In Progress |
+| 2 | AI context + remediation engine | Planned |
+| 3 | GitHub PR integration | Planned |
+| 4 | Web dashboard | Planned |
+| 5 | open source | Planned |
 
 ---
 
