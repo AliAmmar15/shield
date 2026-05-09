@@ -536,6 +536,8 @@ def _extract_cvss_v2(severity_field: Any) -> float | None:
         return None
 
     raw_score = cvss_v3.get("base_score")
+    if raw_score is None:
+        return None
     try:
         return float(raw_score)
     except (TypeError, ValueError):

@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING, Any
 from shield.core.output import Severity
 
 if TYPE_CHECKING:
-    from shield.normalizer_stub import NormalizedFinding
+    from normalizer.models import NormalizedFinding
 
 # ---------------------------------------------------------------------------
 # Constants

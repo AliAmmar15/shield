@@ -2,33 +2,39 @@
 scan command — core entry point for local security analysis.
 
 Runs the scanner pipeline on a given path and renders findings
-to the terminal using Rich. No API calls in Phase 0.
+to the terminal using Rich.
 
-Phase 0 pipeline:
-  1. SecretsDetector (trufflehog v3 or entropy fallback)
-  2. NormalizedFinding conversion (normalizer_stub)
-  3. Severity filter + terminal/json/sarif output
+Phase 1 pipeline (parallel execution):
+  Stage 1: SecretsDetector (synchronous — always first)
+  Stage 2: BanditRunner + SemgrepRunner + PipAuditRunner + SafetyRunner
+           (concurrent via asyncio.to_thread — all four run simultaneously)
+  Post:    FindingNormalizer → DeduplicationFilter → severity sort
 
 Usage:
     shield scan ./myproject
     shield scan ./myproject --format json
     shield scan ./myproject --severity high
+    shield scan ./myproject --verbose
 """
 
 from __future__ import annotations
 
+import asyncio
 from enum import StrEnum
 from pathlib import Path
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from scanner.pipeline import ScanPipeline  # type: ignore[attr-defined]  # outer stub
 
 from shield.core.output import Severity
 from shield.formatters.sarif import to_sarif, write_sarif
 from shield.formatters.terminal import render_findings_table
-from shield.normalizer_stub import NormalizedFinding, get_stub_findings
+
+if TYPE_CHECKING:
+    from normalizer.models import NormalizedFinding
 
 # allow_interspersed_args=True lets users place options after the path argument:
 #   shield scan ./project --sarif   (instead of requiring: shield scan --sarif ./project)
@@ -95,7 +101,7 @@ def scan(
     ] = "info",
     verbose: Annotated[
         bool,
-        typer.Option("--verbose", "-v", help="Show verbose output including skipped files."),
+        typer.Option("--verbose", "-v", help="Show verbose output including per-tool timing."),
     ] = False,
     sarif: Annotated[
         bool,
@@ -115,8 +121,8 @@ def scan(
 ) -> None:
     """Run a security scan on the given path.
 
-    Phase 0 pipeline: secrets detection only (trufflehog v3 or entropy fallback).
-    Phase 1 will add: Bandit, Semgrep, pip-audit, parallel execution.
+    Phase 1 pipeline: secrets + Bandit + Semgrep + pip-audit + Safety.
+    Secrets run first (synchronous); all other tools run in parallel.
     """
     target = _resolve_target(path)
 
@@ -133,12 +139,16 @@ def scan(
         console=console,
         transient=True,  # clears the spinner line after completion
     ) as progress:
-        task = progress.add_task("[yellow]Detecting secrets...[/yellow]", total=None)
+        task = progress.add_task(
+            "[yellow]Running security scan (secrets → bandit + semgrep + pip-audit + safety)...[/yellow]",
+            total=None,
+        )
 
-        # Phase 0: secrets detection only.
-        # get_stub_findings() calls run_secrets_scan() → SecretsDetector.scan().
-        # trufflehog is used if installed; entropy fallback runs otherwise.
-        findings = get_stub_findings(target)
+        # Phase 1: full parallel pipeline.
+        # ScanPipeline.run() is async; asyncio.run() bridges to this sync CLI context.
+        # verbose=True passes per-detector timing to the pipeline logger.
+        pipeline = ScanPipeline()
+        findings = asyncio.run(pipeline.run(target, verbose=verbose))
 
         progress.update(task, description="[green]Scan complete.[/green]")
 

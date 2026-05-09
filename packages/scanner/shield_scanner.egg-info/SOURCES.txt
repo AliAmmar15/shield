@@ -5,9 +5,13 @@ detectors/pip_audit.py
 detectors/secrets.py
 detectors/semgrep.py
 scanner/__init__.py
+scanner/pipeline.py
 scanner/detectors/__init__.py
 scanner/detectors/bandit.py
+scanner/detectors/pip_audit.py
+scanner/detectors/safety.py
 scanner/detectors/secrets.py
+scanner/detectors/semgrep.py
 shield_scanner.egg-info/PKG-INFO
 shield_scanner.egg-info/SOURCES.txt
 shield_scanner.egg-info/dependency_links.txt

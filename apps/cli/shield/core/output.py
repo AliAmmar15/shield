@@ -11,34 +11,25 @@ entire CLI. Color scheme:
 
 These colors are used consistently in all terminal output (tables,
 inline messages, progress indicators).
+
+Note: Severity and Confidence are the canonical definitions from
+packages/normalizer/models.py. They are re-exported here so that all
+existing CLI code (formatters, commands) can continue to import from
+shield.core.output without any changes.
 """
 
 from __future__ import annotations
 
-from enum import StrEnum
-
-
-class Severity(StrEnum):
-    """Normalized severity levels across all scanner tools.
-
-    Values map directly to the NormalizedFinding.severity field.
-    Always use this enum — never raw strings — for severity comparisons.
-    """
-
-    CRITICAL = "CRITICAL"
-    HIGH = "HIGH"
-    MEDIUM = "MEDIUM"
-    LOW = "LOW"
-    INFO = "INFO"
-
-
-class Confidence(StrEnum):
-    """Confidence level for a finding — reflects tool certainty, not severity."""
-
-    HIGH = "HIGH"
-    MEDIUM = "MEDIUM"
-    LOW = "LOW"
-
+# Re-export canonical enums from the normalizer package.
+# This keeps Severity and Confidence as the single source of truth in
+# packages/normalizer/models.py while preserving backward compatibility
+# for all existing imports in the CLI (e.g. `from shield.core.output import Severity`).
+from normalizer.models import (  # noqa: PLC0414
+    Confidence as Confidence,
+)
+from normalizer.models import (
+    Severity as Severity,
+)
 
 # Canonical Rich markup color per severity level.
 # Used in tables, panels, and inline messages.

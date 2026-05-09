@@ -25,7 +25,7 @@ from rich.text import Text
 from shield.core.output import SEVERITY_BADGES, SEVERITY_COLORS, Severity
 
 if TYPE_CHECKING:
-    from shield.normalizer_stub import NormalizedFinding
+    from normalizer.models import NormalizedFinding
 
 
 def _truncate(text: str, max_len: int = 80) -> str:

@@ -1,28 +1,25 @@
 """
 normalizer_stub.py — Phase 0 scanner entry point and finding normalization.
 
-Responsibilities in Phase 0:
-  - Defines the canonical NormalizedFinding dataclass (shared by all formatters)
-  - Defines _RawFindingLike Protocol (structural type for RawFinding from scanner pkg)
-  - Provides run_secrets_scan() which calls SecretsDetector and converts results
-  - get_stub_findings() delegates to run_secrets_scan() — replaces the empty stub
+Phase 1 update: NormalizedFinding is now defined in packages/normalizer/models.py
+and re-exported here for backward compatibility. All existing imports of
+NormalizedFinding from this module continue to work unchanged.
 
-In Phase 1, this module is replaced by a real import from packages/normalizer
-(full normalization, deduplication, CWE mapping, fingerprint hashing).
-
-The NormalizedFinding dataclass must stay in sync with the spec in
-.github/copilot-instructions.md → DATA MODELS.
+The secrets-only scan path (run_secrets_scan / get_stub_findings) is retained
+for backward compatibility. In Phase 1 the CLI scan command uses ScanPipeline
+directly; get_stub_findings is no longer called from scan.py.
 """
 
 from __future__ import annotations
 
 import hashlib
 import logging
-from dataclasses import dataclass, field
-from datetime import datetime
 from typing import TYPE_CHECKING, Any, Protocol
 
-from shield.core.output import Confidence, Severity
+# Phase 1: NormalizedFinding is the canonical definition from packages/normalizer.
+# Re-exported here so any existing code that imports from normalizer_stub continues
+# to work without modification.
+from normalizer.models import Confidence, NormalizedFinding, Severity  # noqa: F401
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -36,12 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 class _RawFindingLike(Protocol):
-    """Structural interface matching scanner.detectors.secrets.RawFinding.
-
-    Defined here so normalizer_stub.py can type-check conversions without
-    a hard import-time dependency on shield-scanner. The Protocol is satisfied
-    by any object that has the listed attributes with compatible types.
-    """
+    """Structural interface matching scanner.detectors.secrets.RawFinding."""
 
     tool: str
     rule_id: str
@@ -53,46 +45,10 @@ class _RawFindingLike(Protocol):
     metadata: dict[str, Any]
 
 
-@dataclass
-class NormalizedFinding:
-    """Canonical finding shape shared by all scanner tools and formatters.
-
-    Fields are a strict subset of the full NormalizedFinding spec.
-    AI-enrichment fields (exploitability_score, ai_priority, etc.)
-    are added in Phase 2 when the AI engine is wired in.
-    """
-
-    id: str  # deterministic: hash(tool+file+line+rule_id)
-    tool: str  # "bandit" | "semgrep" | "secrets" | "pip-audit"
-    rule_id: str
-    cwe: list[str]  # e.g. ["CWE-89"]
-    owasp: list[str]  # e.g. ["A03:2021"]
-    severity: Severity
-    confidence: Confidence
-    file: str
-    line_start: int
-    line_end: int
-    code_snippet: str
-    message: str
-    fix_available: bool = False
-    suppressed: bool = False
-    first_seen: datetime = field(default_factory=datetime.utcnow)
-    # AI fields — populated in Phase 2
-    exploitability_score: float | None = None
-    ai_priority: int | None = None
-    ai_explanation: str | None = None
-    ai_remediation: str | None = None
-    false_positive: bool = False
-
-
 def get_stub_findings(target: Path) -> list[NormalizedFinding]:
-    """Run Phase 0 scanner — secrets detection only.
+    """Run secrets-only scan (Phase 0 fallback).
 
-    Delegates to run_secrets_scan(). Provides trufflehog if installed,
-    entropy-based fallback if not. Returns empty list if shield-scanner
-    package is not installed.
-
-    Will be replaced by the full parallel pipeline in Phase 1.
+    Retained for backward compatibility. Phase 1 CLI scan.py uses ScanPipeline.
 
     Args:
         target: The resolved scan target path.
@@ -146,7 +102,7 @@ def run_secrets_scan(target: Path) -> list[NormalizedFinding]:
         return []
 
     detector = SecretsDetector()
-    raw_findings: list[_RawFindingLike] = detector.scan(target)
+    raw_findings = detector.scan(target)  # list[RawFinding] — compatible at runtime
     return [_raw_to_normalized(f) for f in raw_findings]
 
 
