@@ -400,9 +400,7 @@ class TestRunSafety:
     def test_exit_code_64_parsed_as_vulns(self) -> None:
         """safety >= 2.0 uses exit code 64 to indicate vulnerabilities found."""
         runner = SafetyRunner()
-        with patch(
-            "subprocess.run", return_value=_make_proc(64, stdout=_SAFETY_V2_JSON_TWO_VULNS)
-        ):
+        with patch("subprocess.run", return_value=_make_proc(64, stdout=_SAFETY_V2_JSON_TWO_VULNS)):
             result = runner._run_safety(Path("/fake"), None)
         assert len(result) == 2
 
@@ -478,9 +476,7 @@ class TestRunSafety:
     def test_attribution_path_uses_target_when_no_req_file(self) -> None:
         runner = SafetyRunner()
         target = Path("/fake/project")
-        with patch(
-            "subprocess.run", return_value=_make_proc(64, stdout=_SAFETY_V2_JSON_CRITICAL)
-        ):
+        with patch("subprocess.run", return_value=_make_proc(64, stdout=_SAFETY_V2_JSON_CRITICAL)):
             result = runner._run_safety(target, None)
         assert len(result) == 1
         assert result[0].file == str(target)
@@ -630,18 +626,14 @@ class TestParseEntryV2:
 
     def test_severity_high_for_cvss_7_5(self) -> None:
         runner = self._runner()
-        entry = self._make_entry(
-            severity={"cvss_v3": {"base_score": 7.5, "base_severity": "HIGH"}}
-        )
+        entry = self._make_entry(severity={"cvss_v3": {"base_score": 7.5, "base_severity": "HIGH"}})
         result = runner._parse_entry_v2(entry, "/fake/req.txt")
         assert result is not None
         assert result.severity == "HIGH"
 
     def test_severity_low_for_cvss_2_5(self) -> None:
         runner = self._runner()
-        entry = self._make_entry(
-            severity={"cvss_v3": {"base_score": 2.5, "base_severity": "LOW"}}
-        )
+        entry = self._make_entry(severity={"cvss_v3": {"base_score": 2.5, "base_severity": "LOW"}})
         result = runner._parse_entry_v2(entry, "/fake/req.txt")
         assert result is not None
         assert result.severity == "LOW"
@@ -766,11 +758,11 @@ class TestParseEntryV1:
 
     def _make_entry(self, **overrides: object) -> list:
         base: list = [
-            "django",           # [0] package name
+            "django",  # [0] package name
             "<2.2.24,>=2.2.0",  # [1] affected spec
-            "2.2.12",           # [2] installed version
+            "2.2.12",  # [2] installed version
             "Django 2.2.x before 2.2.24 allows SQL injection.",  # [3] advisory
-            "35518",            # [4] vuln ID
+            "35518",  # [4] vuln ID
         ]
         # Apply positional overrides by index if provided
         return base

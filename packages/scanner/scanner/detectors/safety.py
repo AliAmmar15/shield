@@ -344,14 +344,10 @@ class SafetyRunner:
             logger.debug("safety (v1 format): parsed %d findings", len(findings))
             return findings
 
-        logger.error(
-            "safety JSON output is neither a dict nor a list: %s", type(data).__name__
-        )
+        logger.error("safety JSON output is neither a dict nor a list: %s", type(data).__name__)
         return []
 
-    def _parse_entry_v2(
-        self, entry: Any, attribution_path: str
-    ) -> RawFinding | None:
+    def _parse_entry_v2(self, entry: Any, attribution_path: str) -> RawFinding | None:
         """Convert a single safety v2 vulnerability dict into a RawFinding.
 
         Expected structure::
@@ -434,9 +430,7 @@ class SafetyRunner:
             },
         )
 
-    def _parse_entry_v1(
-        self, entry: Any, attribution_path: str
-    ) -> RawFinding | None:
+    def _parse_entry_v1(self, entry: Any, attribution_path: str) -> RawFinding | None:
         """Convert a single safety v1 list entry into a RawFinding.
 
         Safety v1 format: 5-element list::
@@ -474,8 +468,7 @@ class SafetyRunner:
         fix_msg = f" Fix: {fix_hint}." if fix_hint else ""
 
         message = (
-            f"[{vuln_id}] {package_name}=={installed_version} "
-            f"has a known vulnerability.{fix_msg}"
+            f"[{vuln_id}] {package_name}=={installed_version} has a known vulnerability.{fix_msg}"
         )
         if advisory:
             truncated = advisory[:200] + "..." if len(advisory) > 200 else advisory

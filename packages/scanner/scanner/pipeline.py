@@ -167,10 +167,10 @@ class ScanPipeline:
         # Define (name, runner) pairs in priority order.
         # asyncio.gather preserves this order in return_exceptions mode.
         parallel_runners: list[tuple[str, _ParallelRunner]] = [
-            ("bandit", self._bandit),       # PIPELINE_PRIORITY = 1
-            ("semgrep", self._semgrep),     # PIPELINE_PRIORITY = 2
-            ("pip-audit", self._pip_audit), # PIPELINE_PRIORITY = 3
-            ("safety", self._safety),       # PIPELINE_PRIORITY = 4
+            ("bandit", self._bandit),  # PIPELINE_PRIORITY = 1
+            ("semgrep", self._semgrep),  # PIPELINE_PRIORITY = 2
+            ("pip-audit", self._pip_audit),  # PIPELINE_PRIORITY = 3
+            ("safety", self._safety),  # PIPELINE_PRIORITY = 4
         ]
 
         tasks = [

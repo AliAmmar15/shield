@@ -62,18 +62,18 @@ PIPELINE_PRIORITY: int = 1
 # Tests not listed here fall back to bandit's own `issue_cwe` field in the JSON.
 _BANDIT_CWE_MAP: dict[str, list[str]] = {
     # Injection / exec
-    "B102": ["CWE-78"],   # exec_used — OS command injection via exec()
-    "B307": ["CWE-78"],   # eval — dangerous use of eval()
-    "B601": ["CWE-78"],   # paramiko_calls — shell=True in paramiko
-    "B602": ["CWE-78"],   # subprocess_popen_with_shell_equals_true
-    "B603": ["CWE-78"],   # subprocess_without_shell_equals_true
-    "B604": ["CWE-78"],   # any_other_function_with_shell_equals_true
-    "B605": ["CWE-78"],   # start_process_with_a_shell
-    "B606": ["CWE-78"],   # start_process_with_no_shell
-    "B607": ["CWE-78"],   # start_process_with_partial_path
-    "B609": ["CWE-78"],   # linux_commands_wildcard_injection
-    "B608": ["CWE-89"],   # hardcoded_sql_expressions — SQL injection
-    "B611": ["CWE-89"],   # django_rawsql_used — raw SQL in Django ORM
+    "B102": ["CWE-78"],  # exec_used — OS command injection via exec()
+    "B307": ["CWE-78"],  # eval — dangerous use of eval()
+    "B601": ["CWE-78"],  # paramiko_calls — shell=True in paramiko
+    "B602": ["CWE-78"],  # subprocess_popen_with_shell_equals_true
+    "B603": ["CWE-78"],  # subprocess_without_shell_equals_true
+    "B604": ["CWE-78"],  # any_other_function_with_shell_equals_true
+    "B605": ["CWE-78"],  # start_process_with_a_shell
+    "B606": ["CWE-78"],  # start_process_with_no_shell
+    "B607": ["CWE-78"],  # start_process_with_partial_path
+    "B609": ["CWE-78"],  # linux_commands_wildcard_injection
+    "B608": ["CWE-89"],  # hardcoded_sql_expressions — SQL injection
+    "B611": ["CWE-89"],  # django_rawsql_used — raw SQL in Django ORM
     # Hard-coded credentials
     "B105": ["CWE-259"],  # hardcoded_password_string
     "B106": ["CWE-259"],  # hardcoded_password_funcarg
@@ -91,11 +91,11 @@ _BANDIT_CWE_MAP: dict[str, list[str]] = {
     # Deserialization
     "B301": ["CWE-502"],  # pickle — insecure deserialization
     "B302": ["CWE-502"],  # marshal — insecure deserialization
-    "B506": ["CWE-20"],   # yaml_load — arbitrary code execution
+    "B506": ["CWE-20"],  # yaml_load — arbitrary code execution
     # Template injection / XSS
-    "B701": ["CWE-94"],   # jinja2_autoescape_false — XSS via template injection
-    "B702": ["CWE-94"],   # use_of_mako_templates — XSS
-    "B703": ["CWE-79"],   # django_mark_safe — XSS
+    "B701": ["CWE-94"],  # jinja2_autoescape_false — XSS via template injection
+    "B702": ["CWE-94"],  # use_of_mako_templates — XSS
+    "B703": ["CWE-79"],  # django_mark_safe — XSS
     # Network / cleartext
     "B321": ["CWE-319"],  # ftp_lib
     "B401": ["CWE-319"],  # import_telnetlib
@@ -111,11 +111,11 @@ _BANDIT_CWE_MAP: dict[str, list[str]] = {
     "B110": ["CWE-390"],  # try_except_pass — swallowed exceptions
     # Code execution / debug
     "B101": ["CWE-703"],  # assert_used — asserts removed in optimised bytecode
-    "B201": ["CWE-94"],   # flask_debug_true — exposes interactive Werkzeug console
+    "B201": ["CWE-94"],  # flask_debug_true — exposes interactive Werkzeug console
     # XML
     "B320": ["CWE-611"],  # xml — XXE via lxml/etree
     "B411": ["CWE-611"],  # import_xmlrpclib — XXE
-    "B322": ["CWE-78"],   # input — Python 2 input() == eval()
+    "B322": ["CWE-78"],  # input — Python 2 input() == eval()
 }
 
 # Maps bandit's severity string → our canonical severity string.
@@ -215,10 +215,11 @@ class BanditRunner:
         """
         cmd: list[str] = [
             "bandit",
-            "-r",        # recursive scan
+            "-r",  # recursive scan
             str(target),
-            "-f", "json",  # machine-readable JSON output
-            "-q",          # suppress progress/info output to stderr
+            "-f",
+            "json",  # machine-readable JSON output
+            "-q",  # suppress progress/info output to stderr
         ]
 
         try:
@@ -226,8 +227,8 @@ class BanditRunner:
                 cmd,
                 capture_output=True,
                 text=True,
-                check=False,   # bandit exits 1 on findings — handled below
-                timeout=120,   # generous timeout; large repos can be slow
+                check=False,  # bandit exits 1 on findings — handled below
+                timeout=120,  # generous timeout; large repos can be slow
             )
         except subprocess.TimeoutExpired:
             logger.error("bandit scan timed out after 120 seconds on: %s", target)
@@ -322,7 +323,9 @@ class BanditRunner:
             filename: str = str(entry["filename"])
             line_number: int = int(entry["line_number"])
         except (KeyError, ValueError, TypeError) as exc:
-            logger.warning("Skipping malformed bandit result entry (missing required field): %s", exc)
+            logger.warning(
+                "Skipping malformed bandit result entry (missing required field): %s", exc
+            )
             return None
 
         issue_severity: str = str(entry.get("issue_severity", "LOW")).upper()
