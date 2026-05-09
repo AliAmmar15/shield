@@ -22,17 +22,99 @@ Shield is different. Instead of burying you in findings, it identifies real issu
 
 ---
 
-## Quick Start
+## Installation
+
+**From source (development):**
 
 ```bash
-# Install
-pip install shield-cli
+git clone https://github.com/AliAmmar15/shield
+cd shield
 
-# Scan your project
+# Install uv if you don't have it
+pip install uv
+
+# Install all workspace packages
+uv sync --all-extras --dev
+
+# Activate the virtual environment
+source .venv/bin/activate        # macOS/Linux
+.venv\Scripts\Activate.ps1       # Windows PowerShell
+
+# Install the CLI in editable mode
+pip install -e apps/cli
+pip install -e packages/scanner
+pip install -e packages/normalizer
+```
+
+**Verify the install:**
+
+```bash
+shield --help
+```
+
+---
+
+## Usage
+
+### Scan a project
+
+```bash
+# Scan the current directory
 shield scan ./
 
-# Scan with AI prioritization (requires free account)
-shield scan ./ --ai
+# Scan a specific path
+shield scan ./src
+
+# Only show HIGH and above
+shield scan ./ --severity high
+
+# Verbose output (shows per-tool timing)
+shield scan ./ --verbose
+```
+
+### Output formats
+
+```bash
+# Default: rich terminal table
+shield scan ./
+
+# JSON (pipe-friendly)
+shield scan ./ --format json
+
+# Write a SARIF file (for GitHub Security tab)
+shield scan ./ --sarif
+
+# Write SARIF to a custom path
+shield scan ./ -o results/shield.sarif
+```
+
+### Use in CI (GitHub Actions)
+
+```yaml
+- name: Shield security scan
+  run: shield scan . --sarif -o shield-results.sarif
+
+- name: Upload to GitHub Security tab
+  uses: github/codeql-action/upload-sarif@v4
+  with:
+    sarif_file: shield-results.sarif
+```
+
+Shield exits with code `1` when CRITICAL or HIGH findings are detected — use this as a CI gate.
+
+### Pre-commit hook
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: local
+    hooks:
+      - id: shield
+        name: Shield security scan
+        entry: shield scan
+        language: system
+        pass_filenames: false
+        args: ["./", "--severity", "high"]
 ```
 
 ---
@@ -40,17 +122,17 @@ shield scan ./ --ai
 ## Example Output
 
 ```
-✓ Detected Python project (FastAPI)
 ✓ Running secret detection...          [0.3s]
 ✓ Running Bandit...                    [2.1s]
 ✓ Running Semgrep...                   [4.2s]
 ✓ Running pip-audit...                 [1.8s]
+✓ Running Safety...                    [1.2s]
 ──────────────────────────────────────────────
   3 CRITICAL  │  7 HIGH  │  12 MEDIUM  │  34 LOW
 
 ⚠ CRITICAL  Hardcoded AWS key detected
   → src/config.py:14
-  → Fix: shield fix src/config.py:14
+  CWE-798 · A07:2021
 ```
 
 ---
@@ -61,12 +143,26 @@ Shield is currently in active development. We are working through the following 
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| 0 | CLI foundation + secret detection | Completed |
-| 1 | Full scanner pipeline + normalization | In Progress |
-| 2 | AI context + remediation engine | Planned |
-| 3 | GitHub PR integration | Planned |
-| 4 | Web dashboard | Planned |
-| 5 | open source | Planned |
+| 0 | CLI foundation + secret detection | ✅ Complete |
+| 1 | Full scanner pipeline + normalization | 🟡 In Progress |
+| 2 | AI context + remediation engine | 🔵 Planned |
+| 3 | GitHub PR integration | 🔵 Planned |
+| 4 | Web dashboard | 🔵 Planned |
+| 5 | Open source + GTM | 🔵 Planned |
+
+### Phase 1 Progress (as of 2026-05-09)
+
+The scanner pipeline and normalization layer are complete. `shield scan ./` runs 5 tools in parallel and returns normalized, deduplicated findings in a unified format:
+
+- **Bandit** — Python AST static analysis (40 CWE mappings, B101–B413)
+- **Semgrep** — Pattern-based analysis with OWASP Top 10 tagging
+- **pip-audit** — Dependency CVE scanning with CVSS v3 severity scoring
+- **Safety** — Vulnerability database cross-reference (v1 + v2 JSON formats)
+- **Secret detection** — trufflehog v3 + entropy-based fallback
+
+All findings are normalized to a unified `NormalizedFinding` schema with deterministic SHA-256 fingerprints, CWE tags, and OWASP Top 10 categories.
+
+Remaining: JSON/SARIF output format validation against the new pipeline, and unit tests for `FindingNormalizer` and `DeduplicationFilter`.
 
 ---
 
