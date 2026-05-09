@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING, Annotated
 import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from scanner.pipeline import ScanPipeline  # type: ignore[attr-defined]  # outer stub
+from scanner.pipeline import ScanPipeline
 
 from shield.core.output import Severity
 from shield.formatters.sarif import to_sarif, write_sarif

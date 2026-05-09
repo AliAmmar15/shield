@@ -26,7 +26,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 # ---------------------------------------------------------------------------
 # Path setup — mirrors the pattern in test_secrets.py
@@ -193,9 +193,11 @@ class TestBanditRunnerScan:
     def test_returns_empty_list_when_bandit_not_installed(self) -> None:
         """scan() must return [] and not raise when bandit is missing from PATH."""
         runner = BanditRunner()
-        with patch.object(runner, "_bandit_available", return_value=False):
-            with tempfile.TemporaryDirectory() as tmp:
-                result = runner.scan(Path(tmp))
+        with (
+            patch.object(runner, "_bandit_available", return_value=False),
+            tempfile.TemporaryDirectory() as tmp,
+        ):
+            result = runner.scan(Path(tmp))
         assert result == []
 
     def test_delegates_to_run_bandit_when_available(self) -> None:
@@ -205,9 +207,9 @@ class TestBanditRunnerScan:
         with (
             patch.object(runner, "_bandit_available", return_value=True),
             patch.object(runner, "_run_bandit", return_value=sentinel) as mock_run,
+            tempfile.TemporaryDirectory() as tmp,
         ):
-            with tempfile.TemporaryDirectory() as tmp:
-                result = runner.scan(Path(tmp))
+            result = runner.scan(Path(tmp))
         mock_run.assert_called_once()
         assert result is sentinel
 
@@ -281,23 +283,27 @@ class TestRunBandit:
     def test_returns_empty_list_on_timeout(self) -> None:
         """TimeoutExpired must be caught — returns [] without raising."""
         runner = BanditRunner()
-        with patch(
-            "scanner.detectors.bandit.subprocess.run",
-            side_effect=subprocess.TimeoutExpired(cmd=["bandit"], timeout=120),
+        with (
+            patch(
+                "scanner.detectors.bandit.subprocess.run",
+                side_effect=subprocess.TimeoutExpired(cmd=["bandit"], timeout=120),
+            ),
+            tempfile.TemporaryDirectory() as tmp,
         ):
-            with tempfile.TemporaryDirectory() as tmp:
-                result = runner._run_bandit(Path(tmp))
+            result = runner._run_bandit(Path(tmp))
         assert result == []
 
     def test_returns_empty_list_on_os_error(self) -> None:
         """OSError on subprocess start must be caught — returns []."""
         runner = BanditRunner()
-        with patch(
-            "scanner.detectors.bandit.subprocess.run",
-            side_effect=OSError("Permission denied"),
+        with (
+            patch(
+                "scanner.detectors.bandit.subprocess.run",
+                side_effect=OSError("Permission denied"),
+            ),
+            tempfile.TemporaryDirectory() as tmp,
         ):
-            with tempfile.TemporaryDirectory() as tmp:
-                result = runner._run_bandit(Path(tmp))
+            result = runner._run_bandit(Path(tmp))
         assert result == []
 
     def test_returns_empty_list_on_empty_stdout(self) -> None:
