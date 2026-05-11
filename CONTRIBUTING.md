@@ -40,8 +40,8 @@ pip install -e packages/normalizer
 **Verify everything is working:**
 
 ```bash
-shield --help
-shield scan ./apps/cli/shield
+velonus --help
+velonus scan ./apps/cli/shield
 ```
 
 ---

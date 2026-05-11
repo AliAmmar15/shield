@@ -6,7 +6,7 @@
 
 If you discover a security issue in Velonus — including the CLI, the API, the scanner pipeline, or the AI engine — please report it privately by emailing:
 
-**security@velonus.dev**
+**velonusystems@gmail.com**
 
 Include as much detail as possible:
 - Description of the vulnerability

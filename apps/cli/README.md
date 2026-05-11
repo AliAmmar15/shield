@@ -11,9 +11,9 @@
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Commands](#commands)
-  - [shield scan](#shield-scan)
-  - [shield auth](#shield-auth)
-  - [shield config](#shield-config)
+  - [velonus scan](#velonus-scan)
+  - [velonus auth](#velonus-auth)
+  - [velonus config](#velonus-config)
 - [Output Formats](#output-formats)
 - [Severity Levels](#severity-levels)
 - [CI/CD Integration](#cicd-integration)
@@ -34,11 +34,11 @@
 pip install -e apps/cli
 ```
 
-> The package name is `velonus-cli`. The CLI command installed is `shield`.
+> The package name is `velonus-cli`. The CLI command installed is `velonus`.
 
 ### Add to PATH (Windows — run once)
 
-After installing, make the `shield` command available in every terminal:
+After installing, make the `velonus` command available in every terminal:
 
 ```powershell
 [System.Environment]::SetEnvironmentVariable(
@@ -51,7 +51,7 @@ After installing, make the `shield` command available in every terminal:
 Then restart your terminal. Verify with:
 
 ```powershell
-shield --version
+velonus --version
 ```
 
 ---
@@ -60,28 +60,28 @@ shield --version
 
 ```bash
 # Scan the current directory
-shield scan ./
+velonus scan ./
 
 # Scan a specific project
-shield scan ./my-python-project
+velonus scan ./my-python-project
 
 # Only show HIGH and CRITICAL findings
-shield scan ./ --severity high
+velonus scan ./ --severity high
 
 # Output as JSON (for piping or tooling)
-shield scan ./ --format json
+velonus scan ./ --format json
 ```
 
 ---
 
 ## Commands
 
-### `shield scan`
+### `velonus scan`
 
 Runs the security scanner pipeline on a local path and prints findings to the terminal.
 
 ```
-shield scan [PATH] [OPTIONS]
+velonus scan [PATH] [OPTIONS]
 ```
 
 | Argument / Option | Default | Description |
@@ -96,25 +96,25 @@ shield scan [PATH] [OPTIONS]
 
 ```bash
 # Scan current directory, show all findings
-shield scan ./
+velonus scan ./
 
 # Scan a subdirectory
-shield scan ./apps/api
+velonus scan ./apps/api
 
 # Only show critical and high severity findings
-shield scan ./ --severity high
+velonus scan ./ --severity high
 
 # Show resolved path before scanning
-shield scan ./ --verbose
+velonus scan ./ --verbose
 
 # Export findings as JSON
-shield scan ./ --format json
+velonus scan ./ --format json
 
 # Export findings as JSON, high+ only, redirect to file
-shield scan ./ --format json --severity high > findings.json
+velonus scan ./ --format json --severity high > findings.json
 
 # SARIF output (for GitHub Code Scanning — Phase 1)
-shield scan ./ --format sarif
+velonus scan ./ --format sarif
 ```
 
 #### Exit Codes
@@ -128,36 +128,36 @@ Exit code `1` on HIGH/CRITICAL is intentional — use it as a CI gate to block m
 
 ---
 
-### `shield auth`
+### `velonus auth`
 
-Manages authentication with the Shield API. **Available in Phase 2.**
+Manages authentication with the Velonus API. **Available in Phase 2.**
 
 ```
-shield auth [COMMAND]
+velonus auth [COMMAND]
 ```
 
 | Command | Description |
 |---|---|
-| `shield auth login` | Authenticate via Clerk (browser OAuth flow) |
-| `shield auth logout` | Clear stored credentials |
-| `shield auth status` | Show whether you are currently authenticated |
+| `velonus auth login` | Authenticate via Clerk (browser OAuth flow) |
+| `velonus auth logout` | Clear stored credentials |
+| `velonus auth status` | Show whether you are currently authenticated |
 
 ```bash
-shield auth login
-shield auth logout
-shield auth status
+velonus auth login
+velonus auth logout
+velonus auth status
 ```
 
 > These commands are stubbed in Phase 0. They will be fully functional in Phase 2 when the API backend is live.
 
 ---
 
-### `shield config`
+### `velonus config`
 
 Manages local CLI configuration. **Available in Phase 2.**
 
 ```
-shield config [COMMAND]
+velonus config [COMMAND]
 ```
 
 | Command | Description |
@@ -166,8 +166,8 @@ shield config [COMMAND]
 | `set <key> <value>` | Set a configuration value |
 
 ```bash
-shield config show
-shield config set api_url https://api.shield.dev
+velonus config show
+velonus config set api_url https://api.velonus.dev
 ```
 
 > Stubbed in Phase 0.
@@ -197,8 +197,8 @@ Total: 3 findings  —  1 CRITICAL  1 HIGH  1 MEDIUM
 Newline-delimited JSON array. Each element is a serialized `NormalizedFinding`. Suitable for piping into other tools or storing results.
 
 ```bash
-shield scan ./ --format json | python -m json.tool
-shield scan ./ --format json > scan-results.json
+velonus scan ./ --format json | python -m json.tool
+velonus scan ./ --format json > scan-results.json
 ```
 
 ### `sarif`
@@ -228,7 +228,7 @@ Use `--severity high` to only surface findings worth acting on immediately. Use 
 Add this to `.github/workflows/security.yml`:
 
 ```yaml
-name: Shield Security Scan
+name: Velonus Security Scan
 
 on: [push, pull_request]
 
@@ -247,7 +247,7 @@ jobs:
         run: pip install -e apps/cli
 
       - name: Run security scan
-        run: shield scan ./ --severity high
+        run: velonus scan ./ --severity high
         # exits 1 if HIGH or CRITICAL findings are found — blocks the merge
 ```
 
@@ -261,7 +261,7 @@ repos:
     hooks:
       - id: velonus-scan
         name: Velonus Security Scan
-        entry: shield scan
+        entry: velonus scan
         args: ["./", "--severity", "high"]
         language: system
         pass_filenames: false

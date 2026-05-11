@@ -49,7 +49,7 @@ pip install -e packages/normalizer
 **Verify the install:**
 
 ```bash
-shield --help
+velonus --help
 ```
 
 ---
@@ -60,39 +60,39 @@ shield --help
 
 ```bash
 # Scan the current directory
-shield scan ./
+velonus scan ./
 
 # Scan a specific path
-shield scan ./src
+velonus scan ./src
 
 # Only show HIGH and above
-shield scan ./ --severity high
+velonus scan ./ --severity high
 
 # Verbose output (shows per-tool timing)
-shield scan ./ --verbose
+velonus scan ./ --verbose
 ```
 
 ### Output formats
 
 ```bash
 # Default: rich terminal table
-shield scan ./
+velonus scan ./
 
 # JSON (pipe-friendly)
-shield scan ./ --format json
+velonus scan ./ --format json
 
 # Write a SARIF file (for GitHub Security tab)
-shield scan ./ --sarif
+velonus scan ./ --sarif
 
 # Write SARIF to a custom path
-shield scan ./ -o results/velonus.sarif
+velonus scan ./ -o results/velonus.sarif
 ```
 
 ### Use in CI (GitHub Actions)
 
 ```yaml
 - name: Velonus security scan
-  run: shield scan . --sarif -o velonus-results.sarif
+  run: velonus scan . --sarif -o velonus-results.sarif
 
 - name: Upload to GitHub Security tab
   uses: github/codeql-action/upload-sarif@v4
@@ -111,7 +111,7 @@ repos:
     hooks:
       - id: velonus
         name: Velonus security scan
-        entry: shield scan
+        entry: velonus scan
         language: system
         pass_filenames: false
         args: ["./", "--severity", "high"]
@@ -152,7 +152,7 @@ Velonus is currently in active development. We are working through the following
 
 ### Phase 1 Progress (as of 2026-05-09)
 
-The scanner pipeline and normalization layer are complete. `shield scan ./` runs 5 tools in parallel and returns normalized, deduplicated findings in a unified format:
+The scanner pipeline and normalization layer are complete. `velonus scan ./` runs 5 tools in parallel and returns normalized, deduplicated findings in a unified format:
 
 - **Bandit** — Python AST static analysis (40 CWE mappings, B101–B413)
 - **Semgrep** — Pattern-based analysis with OWASP Top 10 tagging

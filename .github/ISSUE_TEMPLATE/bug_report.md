@@ -12,7 +12,7 @@ assignees: ''
 |---|---|
 | **OS** | e.g. Ubuntu 22.04 / macOS 14.4 / Windows 11 |
 | **Python version** | e.g. 3.12.3 |
-| **velonus-cli version** | Output of `shield --version` or `pip show velonus-cli` |
+| **velonus-cli version** | Output of `velonus --version` or `pip show velonus-cli` |
 
 ---
 
@@ -21,7 +21,7 @@ assignees: ''
 Paste the exact command you ran:
 
 ```bash
-shield scan ./myproject --severity high
+velonus scan ./myproject --severity high
 ```
 
 ---

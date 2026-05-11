@@ -1,6 +1,6 @@
 # Velonus CLI package configuration.
 # Installable as `velonus-cli` via PyPI (Phase 5).
-# Entry point: `shield` command maps to shield.main:app
+# Entry point: `velonus` command maps to shield.main:app
 
 [project]
 name = "velonus-cli"
@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [project.scripts]
-shield = "shield.main:app"
+velonus = "shield.main:app"
 
 [build-system]
 requires = ["hatchling"]

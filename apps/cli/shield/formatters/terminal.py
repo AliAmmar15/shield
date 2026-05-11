@@ -102,7 +102,7 @@ def render_findings_table(
         _console.print(
             Panel(
                 "[bold green]✓ No findings detected.[/bold green]\n"
-                "[dim]Shield scanned your project and found no issues.[/dim]",
+                "[dim]Velonus scanned your project and found no issues.[/dim]",
                 title="[bold green]Clean Scan[/bold green]",
                 border_style="green",
                 padding=(1, 4),

@@ -15,7 +15,7 @@ import typer
 from shield.commands import auth, config, scan
 
 app = typer.Typer(
-    name="shield",
+    name="velonus",
     help="[bold green]Velonus[/bold green] — AI-native AppSec scanner for developers.",
     rich_markup_mode="rich",
     no_args_is_help=True,
@@ -30,7 +30,7 @@ app.add_typer(config.app, name="config", help="Manage Velonus CLI configuration.
 
 
 def main() -> None:
-    """Invoke the Shield CLI application."""
+    """Invoke the Velonus CLI application."""
     app()
 
 

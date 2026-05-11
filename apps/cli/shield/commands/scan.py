@@ -11,10 +11,10 @@ Phase 1 pipeline (parallel execution):
   Post:    FindingNormalizer → DeduplicationFilter → severity sort
 
 Usage:
-    shield scan ./myproject
-    shield scan ./myproject --format json
-    shield scan ./myproject --severity high
-    shield scan ./myproject --verbose
+    velonus scan ./myproject
+    velonus scan ./myproject --format json
+    velonus scan ./myproject --severity high
+    velonus scan ./myproject --verbose
 """
 
 from __future__ import annotations
@@ -37,7 +37,7 @@ if TYPE_CHECKING:
     from normalizer.models import NormalizedFinding
 
 # allow_interspersed_args=True lets users place options after the path argument:
-#   shield scan ./project --sarif   (instead of requiring: shield scan --sarif ./project)
+#   velonus scan ./project --sarif   (instead of requiring: velonus scan --sarif ./project)
 # Click groups disable interspersed args by default; we opt back in here.
 app = typer.Typer(context_settings={"allow_interspersed_args": True})
 console = Console()
