@@ -1,4 +1,4 @@
-"""safety.py — Safety dependency vulnerability runner for the Shield AI scanner pipeline.
+"""safety.py — Safety dependency vulnerability runner for the Velonus scanner pipeline.
 
 Safety checks Python packages against a curated database of known security
 vulnerabilities. It is maintained by pyup.io and covers the same PyPI ecosystem

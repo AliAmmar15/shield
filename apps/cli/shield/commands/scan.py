@@ -107,7 +107,7 @@ def scan(
         bool,
         typer.Option(
             "--sarif",
-            help="Write findings to a SARIF file (default: shield-results.sarif).",
+            help="Write findings to a SARIF file (default: velonus-results.sarif).",
         ),
     ] = False,
     output: Annotated[
@@ -129,7 +129,7 @@ def scan(
     if verbose:
         console.print(f"[dim]Resolved target: {target}[/dim]")
 
-    console.print(f"\n[bold green]Shield AI[/bold green] — scanning [cyan]{target}[/cyan]\n")
+    console.print(f"\n[bold green]Velonus[/bold green] — scanning [cyan]{target}[/cyan]\n")
 
     findings: list[NormalizedFinding] = []
 
@@ -170,7 +170,7 @@ def scan(
     # --sarif flag (or -o path): write SARIF to a file in addition to terminal output
     write_sarif_file = sarif or output is not None
     if write_sarif_file:
-        sarif_path = output if output is not None else Path("shield-results.sarif")
+        sarif_path = output if output is not None else Path("velonus-results.sarif")
         write_sarif(filtered, sarif_path, scan_path=str(target))
         console.print(f"\n[dim]SARIF report written to[/dim] [cyan]{sarif_path}[/cyan]")
 

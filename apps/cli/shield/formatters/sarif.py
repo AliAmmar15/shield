@@ -85,7 +85,7 @@ def to_sarif(findings: list[NormalizedFinding], scan_path: str) -> dict[str, Any
                     "driver": {
                         "name": "shield",
                         "version": _SHIELD_VERSION,
-                        "informationUri": "https://github.com/AliAmmar15/shield",
+                        "informationUri": "https://github.com/AliAmmar15/Velonus",
                         # Each unique rule_id in the findings gets a descriptor entry
                         "rules": rules,
                     }

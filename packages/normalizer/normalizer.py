@@ -1,4 +1,4 @@
-"""normalizer.py — Finding normalization for the Shield AI scanner pipeline.
+"""normalizer.py — Finding normalization for the Velonus scanner pipeline.
 
 FindingNormalizer converts RawFinding objects (produced by scanner detectors)
 into NormalizedFinding objects (the canonical shape used by all downstream

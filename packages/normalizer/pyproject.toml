@@ -1,7 +1,7 @@
 [project]
-name = "shield-normalizer"
+name = "velonus-normalizer"
 version = "0.1.0"
-description = "Shield AI — Finding normalization and deduplication"
+description = "Velonus — Finding normalization and deduplication"
 requires-python = ">=3.12"
 dependencies = []
 

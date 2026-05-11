@@ -1,1 +1,1 @@
-"""Shield AI scanner pipeline package."""
+"""Velonus scanner pipeline package."""

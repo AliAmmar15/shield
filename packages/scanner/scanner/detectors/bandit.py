@@ -1,4 +1,4 @@
-"""bandit.py — Bandit static analysis runner for the Shield AI scanner pipeline.
+"""bandit.py — Bandit static analysis runner for the Velonus scanner pipeline.
 
 Bandit is a Python AST-based security linter maintained by PyCQA. It detects
 common security issues in Python code using a plugin-based test suite.

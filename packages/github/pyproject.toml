@@ -1,12 +1,12 @@
-# Shield GitHub integration package configuration.
+# Velonus GitHub integration package configuration.
 # Phase 0 stub — Python files live directly in this directory root.
 # Phase 2: move files into a github_integration/ subdirectory and update packages value.
 # Note: "github" is reserved by PyGithub — do NOT use packages = ["github"].
 
 [project]
-name = "shield-github"
+name = "velonus-github"
 version = "0.1.0"
-description = "Shield AI — GitHub App integration for PR review and inline comments (Phase 3+)."
+description = "Velonus — GitHub App integration for PR review and inline comments (Phase 3+)."
 requires-python = ">=3.12"
 dependencies = []
 

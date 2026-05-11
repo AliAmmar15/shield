@@ -1,4 +1,4 @@
-# Root uv workspace configuration for Shield AI monorepo.
+# Root uv workspace configuration for Velonus monorepo.
 # Covers all Python apps and packages in the monorepo.
 # Using uv workspaces — do NOT use pip or poetry to manage dependencies.
 

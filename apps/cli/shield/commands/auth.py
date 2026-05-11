@@ -13,14 +13,14 @@ console = Console()
 
 @app.command("login")
 def login() -> None:
-    """Authenticate with the Shield API using Clerk. [dim](Available in Phase 2)[/dim]"""
+    """Authenticate with the Velonus API using Clerk. [dim](Available in Phase 2)[/dim]"""
     console.print("[yellow]⚠ Auth is not yet available. Coming in Phase 2.[/yellow]")
     raise typer.Exit(code=0)
 
 
 @app.command("logout")
 def logout() -> None:
-    """Clear stored Shield API credentials. [dim](Available in Phase 2)[/dim]"""
+    """Clear stored Velonus API credentials. [dim](Available in Phase 2)[/dim]"""
     console.print("[yellow]⚠ Auth is not yet available. Coming in Phase 2.[/yellow]")
     raise typer.Exit(code=0)
 

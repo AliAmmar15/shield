@@ -1,5 +1,5 @@
 """
-secrets.py — Secret detection for the Shield AI scanner pipeline.
+secrets.py — Secret detection for the Velonus scanner pipeline.
 
 PIPELINE ORDER: SecretScanner ALWAYS runs first. See pipeline.py for execution
 order. Rationale: secrets are the highest-risk finding class and must be surfaced

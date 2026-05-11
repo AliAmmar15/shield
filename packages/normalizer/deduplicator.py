@@ -1,4 +1,4 @@
-"""deduplicator.py — Finding deduplication for the Shield AI scanner pipeline.
+"""deduplicator.py — Finding deduplication for the Velonus scanner pipeline.
 
 DeduplicationFilter removes duplicate NormalizedFinding objects using the
 deterministic ``id`` field (SHA-256 fingerprint of tool+file+line+rule_id)

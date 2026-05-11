@@ -1,9 +1,9 @@
-# Shield CLI package configuration.
-# Installable as `shield-cli` via PyPI (Phase 5).
+# Velonus CLI package configuration.
+# Installable as `velonus-cli` via PyPI (Phase 5).
 # Entry point: `shield` command maps to shield.main:app
 
 [project]
-name = "shield-cli"
+name = "velonus-cli"
 version = "0.1.0"
 description = "AI-native application security scanner for developers."
 readme = "README.md"

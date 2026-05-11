@@ -58,13 +58,13 @@ def _shorten_path(file_path: str, target: str) -> str:
 
 
 def _build_table() -> Table:
-    """Construct an empty Rich Table with Shield's standard column layout.
+    """Construct an empty Rich Table with Velonus's standard column layout.
 
     Returns:
         Configured Rich Table instance ready for row insertion.
     """
     table = Table(
-        title="[bold]Shield AI — Scan Results[/bold]",
+        title="[bold]Velonus — Scan Results[/bold]",
         show_header=True,
         header_style="bold white",
         border_style="grey50",

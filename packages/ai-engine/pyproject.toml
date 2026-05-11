@@ -1,11 +1,11 @@
-# Shield AI Engine package configuration.
+# Velonus AI Engine package configuration.
 # Phase 0 stub — Python files live directly in this directory root.
 # Phase 2: move files into an ai_engine/ subdirectory and update packages = ["ai_engine"]
 
 [project]
-name = "shield-ai-engine"
+name = "velonus-ai-engine"
 version = "0.1.0"
-description = "Shield AI — AI context engine and remediation engine (Phase 2+)."
+description = "Velonus — AI context engine and remediation engine (Phase 2+)."
 requires-python = ">=3.12"
 dependencies = []
 

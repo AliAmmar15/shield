@@ -1,1 +1,1 @@
-"""Shield AI CLI package."""
+"""Velonus CLI package."""

@@ -1,4 +1,4 @@
-"""pipeline.py — Parallel scan orchestration for the Shield AI scanner pipeline.
+"""pipeline.py — Parallel scan orchestration for the Velonus scanner pipeline.
 
 ScanPipeline orchestrates all five scanner detectors in two stages:
 

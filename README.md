@@ -1,4 +1,4 @@
-# Shield AI
+# Velonus
 
 > AI-native security copilot for developers. Scans your codebase, cuts the noise, and generates real fixes — not just alerts.
 
@@ -8,7 +8,7 @@
 
 Modern security tools generate hundreds of alerts. Most are noise. Developers ignore them. Real vulnerabilities slip through.
 
-Shield is different. Instead of burying you in findings, it identifies real issues, scores actual exploitability, and gives you the fix — not just the warning.
+Velonus is different. Instead of burying you in findings, it identifies real issues, scores actual exploitability, and gives you the fix — not just the warning.
 
 ---
 
@@ -27,8 +27,8 @@ Shield is different. Instead of burying you in findings, it identifies real issu
 **From source (development):**
 
 ```bash
-git clone https://github.com/AliAmmar15/shield
-cd shield
+git clone https://github.com/AliAmmar15/Velonus
+cd Velonus
 
 # Install uv if you don't have it
 pip install uv
@@ -85,22 +85,22 @@ shield scan ./ --format json
 shield scan ./ --sarif
 
 # Write SARIF to a custom path
-shield scan ./ -o results/shield.sarif
+shield scan ./ -o results/velonus.sarif
 ```
 
 ### Use in CI (GitHub Actions)
 
 ```yaml
-- name: Shield security scan
-  run: shield scan . --sarif -o shield-results.sarif
+- name: Velonus security scan
+  run: shield scan . --sarif -o velonus-results.sarif
 
 - name: Upload to GitHub Security tab
   uses: github/codeql-action/upload-sarif@v4
   with:
-    sarif_file: shield-results.sarif
+    sarif_file: velonus-results.sarif
 ```
 
-Shield exits with code `1` when CRITICAL or HIGH findings are detected — use this as a CI gate.
+Velonus exits with code `1` when CRITICAL or HIGH findings are detected — use this as a CI gate.
 
 ### Pre-commit hook
 
@@ -109,8 +109,8 @@ Shield exits with code `1` when CRITICAL or HIGH findings are detected — use t
 repos:
   - repo: local
     hooks:
-      - id: shield
-        name: Shield security scan
+      - id: velonus
+        name: Velonus security scan
         entry: shield scan
         language: system
         pass_filenames: false
@@ -139,7 +139,7 @@ repos:
 
 ## Status
 
-Shield is currently in active development. We are working through the following phases:
+Velonus is currently in active development. We are working through the following phases:
 
 | Phase | Description | Status |
 |-------|-------------|--------|
@@ -188,7 +188,9 @@ Remaining: JSON/SARIF output format validation against the new pipeline, and uni
 
 ## Contributing
 
-Shield is currently in private development. Contribution guidelines will be published when the CLI core is open sourced after Phase 5.
+Velonus is currently in private development. Contribution guidelines will be published when the CLI core is open sourced after Phase 5.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions that apply today.
 
 ---
 

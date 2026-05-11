@@ -13,7 +13,7 @@ console = Console()
 
 @app.command("show")
 def show() -> None:
-    """Display current Shield CLI configuration. [dim](Available in Phase 2)[/dim]"""
+    """Display current Velonus CLI configuration. [dim](Available in Phase 2)[/dim]"""
     console.print("[yellow]⚠ Config management is not yet available. Coming in Phase 2.[/yellow]")
     raise typer.Exit(code=0)
 

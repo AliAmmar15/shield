@@ -1,13 +1,13 @@
-# Shield scanner package configuration.
+# Velonus scanner package configuration.
 # Provides the scan orchestration pipeline and all detector wrappers.
 # Importable as `scanner` namespace: from scanner.detectors.secrets import SecretsDetector
 # Source lives in packages/scanner/scanner/ (standard src-adjacent layout).
 # In Phase 1, this becomes a uv workspace source dependency in apps/cli.
 
 [project]
-name = "shield-scanner"
+name = "velonus-scanner"
 version = "0.1.0"
-description = "Shield AI scanner pipeline — secret, static analysis, and dependency detectors."
+description = "Velonus scanner pipeline — secret, static analysis, and dependency detectors."
 requires-python = ">=3.12"
 license = { text = "MIT" }
 dependencies = []  # no runtime deps — all tools are subprocess-wrapped

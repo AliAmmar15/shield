@@ -1,4 +1,4 @@
-"""semgrep.py — Semgrep static analysis runner for the Shield AI scanner pipeline.
+"""semgrep.py — Semgrep static analysis runner for the Velonus scanner pipeline.
 
 Semgrep is a fast, pattern-based static analysis tool that matches code against
 human-readable YAML rules. This module uses the ``p/python`` ruleset, which

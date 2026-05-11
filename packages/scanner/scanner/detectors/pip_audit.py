@@ -1,4 +1,4 @@
-"""pip_audit.py — pip-audit dependency vulnerability runner for the Shield AI scanner pipeline.
+"""pip_audit.py — pip-audit dependency vulnerability runner for the Velonus scanner pipeline.
 
 pip-audit is an official Python Packaging Authority (PyPA) tool that audits
 Python environments and requirement files for known vulnerabilities by querying

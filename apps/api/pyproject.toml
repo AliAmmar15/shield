@@ -1,11 +1,11 @@
-# Shield API package configuration.
+# Velonus API package configuration.
 # FastAPI backend — served via uvicorn, async SQLAlchemy, ARQ job queue.
 # Phase 2+: requires a running PostgreSQL and Redis instance.
 
 [project]
-name = "shield-api"
+name = "velonus-api"
 version = "0.1.0"
-description = "Shield AI — FastAPI backend for scan orchestration and AI remediation."
+description = "Velonus — FastAPI backend for scan orchestration and AI remediation."
 requires-python = ">=3.12"
 license = { text = "MIT" }
 

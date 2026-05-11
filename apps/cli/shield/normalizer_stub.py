@@ -96,7 +96,7 @@ def run_secrets_scan(target: Path) -> list[NormalizedFinding]:
         from scanner.detectors.secrets import SecretsDetector  # noqa: PGH003
     except ImportError:
         logger.warning(
-            "shield-scanner package not installed — secret detection disabled. "
+            "velonus-scanner package not installed — secret detection disabled. "
             "Run: pip install -e packages/scanner"
         )
         return []

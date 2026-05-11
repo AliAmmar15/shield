@@ -1,4 +1,4 @@
-# shield-cli
+# velonus-cli
 
 > AI-native application security scanner for developers.  
 > Finds real issues. Explains why they matter. Generates fixes.
@@ -7,6 +7,7 @@
 
 ## Table of Contents
 
+- [velonus-cli](#velonus-cli)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Commands](#commands)
@@ -32,6 +33,8 @@
 ```bash
 pip install -e apps/cli
 ```
+
+> The package name is `velonus-cli`. The CLI command installed is `shield`.
 
 ### Add to PATH (Windows — run once)
 
@@ -135,9 +138,9 @@ shield auth [COMMAND]
 
 | Command | Description |
 |---|---|
-| `login` | Authenticate via Clerk (browser OAuth flow) |
-| `logout` | Clear stored credentials |
-| `status` | Show whether you are currently authenticated |
+| `shield auth login` | Authenticate via Clerk (browser OAuth flow) |
+| `shield auth logout` | Clear stored credentials |
+| `shield auth status` | Show whether you are currently authenticated |
 
 ```bash
 shield auth login
@@ -240,7 +243,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install shield-cli
+      - name: Install velonus-cli
         run: pip install -e apps/cli
 
       - name: Run security scan
@@ -256,8 +259,8 @@ Add to `.pre-commit-config.yaml`:
 repos:
   - repo: local
     hooks:
-      - id: shield-scan
-        name: Shield Security Scan
+      - id: velonus-scan
+        name: Velonus Security Scan
         entry: shield scan
         args: ["./", "--severity", "high"]
         language: system

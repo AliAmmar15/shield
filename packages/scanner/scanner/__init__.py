@@ -1,1 +1,1 @@
-"""Shield AI scanner pipeline — importable Python package."""
+"""Velonus scanner pipeline — importable Python package."""

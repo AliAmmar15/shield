@@ -1,4 +1,4 @@
-"""models.py — Canonical data models for the Shield AI scanner pipeline.
+"""models.py — Canonical data models for the Velonus scanner pipeline.
 
 NormalizedFinding is the single source-of-truth shape shared by:
   - All scanner detectors (via RawFinding → NormalizedFinding conversion)
