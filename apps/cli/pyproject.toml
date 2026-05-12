@@ -1,14 +1,36 @@
 # Velonus CLI package configuration.
-# Installable as `velonus-cli` via PyPI (Phase 5).
+# Published to PyPI as `velonus` — install with: pip install velonus
 # Entry point: `velonus` command maps to shield.main:app
 
 [project]
-name = "velonus-cli"
-version = "0.1.0"
-description = "AI-native application security scanner for developers."
+name = "velonus"
+version = "1.0.0-alpha.1"
+description = "AI-native security copilot for Python developers"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 license = { text = "MIT" }
+authors = [{ name = "Ali Ammar" }]
+keywords = [
+    "security",
+    "appsec",
+    "sast",
+    "devsecops",
+    "python",
+    "semgrep",
+    "bandit",
+    "vulnerability-scanner",
+    "secret-detection",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Security",
+    "Programming Language :: Python :: 3.12",
+]
+
+[project.urls]
+homepage = "https://github.com/AliAmmar15/Velonus"
+repository = "https://github.com/AliAmmar15/Velonus"
 
 dependencies = [
     "typer>=0.12.0",          # CLI framework — locked, do not swap for click directly

@@ -1,0 +1,49 @@
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build and publish velonus to PyPI
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # required to upload GitHub Release artifacts
+      id-token: write  # required for trusted publishing (OIDC) if used later
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Build wheel and sdist
+        working-directory: apps/cli
+        run: uv build
+
+      # Publishes dist/ artifacts to PyPI using the PYPI_API_TOKEN secret.
+      # Set the secret at: GitHub repo → Settings → Secrets and variables →
+      # Actions → New repository secret → Name: PYPI_API_TOKEN
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: apps/cli/dist/
+          password: ${{ secrets.PYPI_API_TOKEN }}
+
+      - name: Upload build artifacts to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: apps/cli/dist/*
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
