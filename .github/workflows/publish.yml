@@ -13,6 +13,7 @@ jobs:
   publish:
     name: Build and publish velonus to PyPI
     runs-on: ubuntu-latest
+    environment: pypi
     permissions:
       contents: write  # required to upload GitHub Release artifacts
       id-token: write  # required for trusted publishing (OIDC) if used later
@@ -32,14 +33,14 @@ jobs:
         working-directory: apps/cli
         run: uv build
 
-      # Publishes dist/ artifacts to PyPI using the PYPI_API_TOKEN secret.
-      # Set the secret at: GitHub repo → Settings → Secrets and variables →
-      # Actions → New repository secret → Name: PYPI_API_TOKEN
+      # Publishes via PyPI Trusted Publisher (OIDC) — no API token required.
+      # Set up at: https://pypi.org/manage/account/publishing/
+      # PyPI project: velonus | Owner: AliAmmar15 | Repo: Velonus
+      # Workflow: publish.yml | Environment: pypi
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: apps/cli/dist/
-          password: ${{ secrets.PYPI_API_TOKEN }}
 
       - name: Upload build artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
