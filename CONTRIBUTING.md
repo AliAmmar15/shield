@@ -17,7 +17,7 @@ Thank you for your interest in contributing. This guide covers everything you ne
 
 ## Dev Environment Setup
 
-**Requirements:** Python 3.12+, [uv](https://docs.astral.sh/uv/) package manager.
+**Requirements:** Python 3.10+, [uv](https://docs.astral.sh/uv/) package manager.
 
 ```bash
 # 1. Clone the repo
@@ -48,7 +48,7 @@ velonus scan ./apps/cli/shield
 
 ## Running Tests
 
-All unit tests live in `apps/cli/tests/`. Run them with:
+All unit tests live in `apps/cli/tests/`. The suite currently has **367 tests** across 6 files covering every scanner wrapper and the normalizer/deduplicator.
 
 ```bash
 pytest apps/cli/tests/
@@ -64,6 +64,11 @@ For a specific test file:
 
 ```bash
 pytest apps/cli/tests/test_secrets.py -v
+pytest apps/cli/tests/test_bandit.py -v
+pytest apps/cli/tests/test_semgrep.py -v
+pytest apps/cli/tests/test_pip_audit.py -v
+pytest apps/cli/tests/test_safety.py -v
+pytest apps/cli/tests/test_normalizer.py -v
 ```
 
 **Tests must pass before any PR is opened.** CI blocks merges if `pytest` exits non-zero.
@@ -98,10 +103,12 @@ ruff check . && ruff format .
 
 ## Type Checking
 
-We use [mypy](https://mypy.readthedocs.io/) in strict mode:
+We use [mypy](https://mypy.readthedocs.io/) in strict mode. Run it across all packages:
 
 ```bash
 mypy apps/cli/shield --strict --ignore-missing-imports
+mypy packages/normalizer --strict --ignore-missing-imports
+mypy packages/scanner --strict --ignore-missing-imports
 ```
 
 All new code must pass mypy strict with zero errors. PRs that introduce `type: ignore` comments require an explanation in a code comment.

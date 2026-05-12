@@ -228,36 +228,6 @@ repos:
   → src/config.py:14
   CWE-798 · A07:2021
 ```
-
----
-
-## Status
-
-Velonus is currently in active development. We are working through the following phases:
-
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 0 | CLI foundation + secret detection | ✅ Complete |
-| 1 | Full scanner pipeline + normalization | 🟡 In Progress |
-| 2 | AI context + remediation engine | 🔵 Planned |
-| 3 | GitHub PR integration | 🔵 Planned |
-| 4 | Web dashboard | 🔵 Planned |
-| 5 | Open source + GTM | 🔵 Planned |
-
-### Phase 1 Progress (as of 2026-05-09)
-
-The scanner pipeline and normalization layer are complete. `velonus scan ./` runs 5 tools in parallel and returns normalized, deduplicated findings in a unified format:
-
-- **Bandit** — Python AST static analysis (40 CWE mappings, B101–B413)
-- **Semgrep** — Pattern-based analysis with OWASP Top 10 tagging
-- **pip-audit** — Dependency CVE scanning with CVSS v3 severity scoring
-- **Safety** — Vulnerability database cross-reference (v1 + v2 JSON formats)
-- **Secret detection** — trufflehog v3 + entropy-based fallback
-
-All findings are normalized to a unified `NormalizedFinding` schema with deterministic SHA-256 fingerprints, CWE tags, and OWASP Top 10 categories.
-
-Remaining: JSON/SARIF output format validation against the new pipeline, and unit tests for `FindingNormalizer` and `DeduplicationFilter`.
-
 ---
 
 ## Tech Stack
