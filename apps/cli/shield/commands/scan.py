@@ -42,6 +42,11 @@ if TYPE_CHECKING:
 app = typer.Typer(context_settings={"allow_interspersed_args": True})
 console = Console()
 
+# Separate stderr console for status/spinner output.
+# Used when --format json is active so that progress messages don't
+# corrupt the JSON written to stdout by _output_json().
+_stderr_console = Console(stderr=True)
+
 
 class OutputFormat(StrEnum):
     """Supported output formats for scan results."""
@@ -69,16 +74,42 @@ def _resolve_target(path: str) -> Path:
     return resolved
 
 
+def _json_default(obj: object) -> str:
+    """Custom JSON serializer for types not handled natively by json.dumps.
+
+    - datetime → ISO 8601 string with T separator (e.g. "2026-05-11T12:34:56.789")
+    - Everything else → str() fallback (covers any unexpected types)
+
+    StrEnum values (Severity, Confidence) are NOT routed here because StrEnum
+    inherits from str, so json.dumps already treats them as plain strings.
+    """
+    from datetime import datetime
+
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    return str(obj)
+
+
 def _output_json(findings: list[NormalizedFinding]) -> None:
-    """Serialize findings to JSON and print to stdout.
+    """Serialize findings to JSON and write directly to sys.stdout.
+
+    Writes to sys.stdout (not the Rich console) so the output is always
+    clean and pipeable:
+        velonus scan ./ --format json | python -m json.tool
 
     Args:
         findings: List of normalized findings to serialize.
     """
     import json
+    import sys
     from dataclasses import asdict
 
-    console.print_json(json.dumps([asdict(f) for f in findings], default=str))
+    payload = json.dumps(
+        [asdict(f) for f in findings],
+        indent=2,
+        default=_json_default,
+    )
+    sys.stdout.write(payload + "\n")
 
 
 @app.callback(invoke_without_command=True)
@@ -126,17 +157,22 @@ def scan(
     """
     target = _resolve_target(path)
 
-    if verbose:
-        console.print(f"[dim]Resolved target: {target}[/dim]")
+    # Route all UI output to stderr when JSON format is active so that stdout
+    # contains only the JSON array — making it safely pipeable to jq / json.tool.
+    ui_console = _stderr_console if output_format == OutputFormat.json else console
 
-    console.print(f"\n[bold green]Velonus[/bold green] — scanning [cyan]{target}[/cyan]\n")
+    if verbose:
+        ui_console.print(f"[dim]Resolved target: {target}[/dim]")
+
+    if output_format != OutputFormat.json:
+        console.print(f"\n[bold green]Velonus[/bold green] — scanning [cyan]{target}[/cyan]\n")
 
     findings: list[NormalizedFinding] = []
 
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
-        console=console,
+        console=ui_console,
         transient=True,  # clears the spinner line after completion
     ) as progress:
         task = progress.add_task(
@@ -152,7 +188,7 @@ def scan(
 
         progress.update(task, description="[green]Scan complete.[/green]")
 
-    # Filter by minimum severity
+    # Filter by minimum severity — applied before all output formats
     sev_order = ["info", "low", "medium", "high", "critical"]
     min_idx = sev_order.index(min_severity.lower()) if min_severity.lower() in sev_order else 0
     filtered = [f for f in findings if sev_order.index(f.severity.value.lower()) >= min_idx]
