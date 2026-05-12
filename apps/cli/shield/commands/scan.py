@@ -20,6 +20,8 @@ Usage:
 from __future__ import annotations
 
 import asyncio
+import subprocess
+import sys
 from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated
@@ -46,6 +48,119 @@ console = Console()
 # Used when --format json is active so that progress messages don't
 # corrupt the JSON written to stdout by _output_json().
 _stderr_console = Console(stderr=True)
+
+
+def _tool_on_path(name: str) -> bool:
+    """Return True if a binary is findable on PATH."""
+    import shutil
+
+    return shutil.which(name) is not None
+
+
+def _prompted_marker() -> Path:
+    """Return the path to the one-time prompt sentinel file.
+
+    After the user has answered the optional-tools prompts (regardless of
+    their answers), we write this file so the prompt never fires again.
+    Location: ~/.velonus/.prompted_tools
+    """
+    return Path.home() / ".velonus" / ".prompted_tools"
+
+
+def _prompt_optional_tools() -> None:
+    """Prompt the user to install optional scanner tools on first use.
+
+    Only runs:
+      1. When stdin is a TTY (not in CI, not when piping output).
+      2. Only ONCE — a sentinel file is written after the first run so
+         subsequent scans skip this entirely.
+
+    Prompts per missing tool:
+      - semgrep    → pip-installable, offered auto-install
+      - trufflehog → Go binary, shows install link only
+    """
+    if not sys.stdin.isatty():
+        # Non-interactive environment (CI, pipe, script) — skip all prompts.
+        return
+
+    marker = _prompted_marker()
+    if marker.exists():
+        # Already asked. Never ask again.
+        return
+
+    missing: list[str] = []
+    if not _tool_on_path("semgrep"):
+        missing.append("semgrep")
+    if not _tool_on_path("trufflehog"):
+        missing.append("trufflehog")
+
+    if not missing:
+        # All optional tools present — write the marker so we never check again.
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        marker.touch()
+        return
+
+    console.print()
+    console.print(
+        "[bold yellow]Optional tools not installed[/bold yellow] — "
+        "installing them improves scan coverage:\n"
+    )
+
+    for tool in missing:
+        if tool == "semgrep":
+            console.print(
+                "  [cyan]semgrep[/cyan]  Pattern-based static analysis (~200 MB). "
+                "Detects injection, hardcoded secrets, insecure patterns."
+            )
+        elif tool == "trufflehog":
+            console.print(
+                "  [cyan]trufflehog[/cyan]  High-accuracy secret scanning (Go binary). "
+                "Detects 700+ credential types with verified entropy checks."
+            )
+
+    console.print()
+
+    # --- semgrep (pip-installable — can auto-install) ---
+    if "semgrep" in missing:
+        if typer.confirm("  Install semgrep now? (~200 MB)", default=False):
+            console.print("\n  [dim]Running: pip install semgrep ...[/dim]")
+            result = subprocess.run(
+                [sys.executable, "-m", "pip", "install", "semgrep"],
+                capture_output=False,  # stream pip output directly to terminal
+            )
+            if result.returncode == 0:
+                console.print("  [green]✓ semgrep installed.[/green]\n")
+            else:
+                console.print(
+                    "  [red]semgrep install failed.[/red] "
+                    "Run manually: [bold]pip install semgrep[/bold]\n"
+                )
+        else:
+            console.print("  Skipped. Install later with: [bold]pip install semgrep[/bold]\n")
+
+    # --- trufflehog (Go binary — cannot pip install, show link) ---
+    if "trufflehog" in missing:
+        if typer.confirm("  Show trufflehog install instructions?", default=True):
+            console.print(
+                "\n  [bold]trufflehog install options:[/bold]\n"
+                "    macOS/Linux:  [cyan]curl -sSfL https://raw.githubusercontent.com/"
+                "trufflesecurity/trufflehog/main/scripts/install.sh | sh[/cyan]\n"
+                "    Windows:      Download from [cyan]https://github.com/trufflesecurity/"
+                "trufflehog/releases[/cyan]\n"
+                "    Homebrew:     [cyan]brew install trufflesecurity/trufflehog/trufflehog[/cyan]\n"
+                "\n"
+                "  [dim]Until installed, Velonus uses its built-in entropy-based "
+                "secret scanner as a fallback.[/dim]\n"
+            )
+        else:
+            console.print(
+                "  Skipped. Install later from: "
+                "[cyan]https://github.com/trufflesecurity/trufflehog/releases[/cyan]\n"
+            )
+
+    # Persist that we've asked — never prompt again regardless of answers.
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    marker.touch()
 
 
 class OutputFormat(StrEnum):
@@ -160,6 +275,11 @@ def scan(
     # Route all UI output to stderr when JSON format is active so that stdout
     # contains only the JSON array — making it safely pipeable to jq / json.tool.
     ui_console = _stderr_console if output_format == OutputFormat.json else console
+
+    # Prompt to install optional tools (semgrep, trufflehog) on first use.
+    # Only runs in interactive TTY sessions — silently skipped in CI/pipes.
+    if output_format == OutputFormat.terminal:
+        _prompt_optional_tools()
 
     if verbose:
         ui_console.print(f"[dim]Resolved target: {target}[/dim]")

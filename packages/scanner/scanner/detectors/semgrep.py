@@ -145,7 +145,7 @@ class SemgrepRunner:
         if not self._semgrep_available():
             logger.warning(
                 "semgrep not found on PATH — skipping Semgrep analysis. "
-                "Install with: uv add semgrep --dev"
+                "Install with: pip install semgrep"
             )
             return []
 

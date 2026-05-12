@@ -189,7 +189,7 @@ class SafetyRunner:
         if not self._safety_available():
             logger.warning(
                 "safety not found on PATH — skipping Safety analysis. "
-                "Install with: uv add safety --dev"
+                "Install with: pip install safety"
             )
             return []
 
@@ -291,9 +291,30 @@ class SafetyRunner:
             logger.debug("safety returned no output")
             return []
 
+        # safety v3 `check --json` appends a DEPRECATED banner (plain text) after
+        # the JSON payload on stdout, causing json.loads to fail with "Extra data".
+        # We also handle v3 variants that prepend the banner before the JSON.
+        # Use raw_decode to parse only the first JSON object, ignoring trailing text.
+        raw_stdout = result.stdout
+        json_start = next(
+            (i for i, ch in enumerate(raw_stdout) if ch in ("{", "[")),
+            None,
+        )
+        if json_start is None:
+            logger.debug("safety returned no JSON output (no '{' or '[' found)")
+            return []
+
+        # Extract only the first valid JSON object, discarding any trailing text.
+        try:
+            decoder = json.JSONDecoder()
+            _, end_idx = decoder.raw_decode(raw_stdout, json_start)
+            clean_json = raw_stdout[json_start:end_idx]
+        except json.JSONDecodeError:
+            clean_json = raw_stdout[json_start:]
+
         # Determine the attribution path for RawFinding.file.
         attribution_path = str(req_file) if req_file is not None else str(target)
-        return self._parse_output(result.stdout, attribution_path)
+        return self._parse_output(clean_json, attribution_path)
 
     def _parse_output(self, json_output: str, attribution_path: str) -> list[RawFinding]:
         """Parse safety's JSON stdout into a list of RawFinding.
@@ -305,8 +326,11 @@ class SafetyRunner:
         - **Format B** (safety < 2.0): list of 5-element lists:
           ``[package_name, affected_spec, installed_version, advisory, vuln_id]``
 
+        Expects a clean JSON string (banner stripping is handled upstream in
+        ``_run_safety`` via ``raw_decode``).
+
         Args:
-            json_output: Raw JSON string from safety's stdout.
+            json_output: Clean JSON string (first JSON object only).
             attribution_path: Path to attribute findings to (requirements file
                               or target directory).
 

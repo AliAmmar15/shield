@@ -150,7 +150,7 @@ class PipAuditRunner:
         if not self._pip_audit_available():
             logger.warning(
                 "pip-audit not found on PATH — skipping dependency audit. "
-                "Install with: uv add pip-audit --dev"
+                "Install with: pip install pip-audit"
             )
             return []
 
@@ -330,10 +330,11 @@ class PipAuditRunner:
         """
         try:
             package_name: str = str(entry["name"])
-            package_version: str = str(entry["version"])
         except (KeyError, TypeError) as exc:
             logger.warning("Skipping malformed pip-audit package entry: %s", exc)
             return []
+        # version may be absent for editable/local installs — default to "unknown"
+        package_version: str = str(entry.get("version", "unknown"))
 
         vulns: list[dict[str, Any]] = entry.get("vulns", [])
         if not vulns:

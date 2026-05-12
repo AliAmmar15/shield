@@ -174,7 +174,7 @@ class BanditRunner:
         if not self._bandit_available():
             logger.warning(
                 "bandit not found on PATH — skipping Bandit analysis. "
-                "Install with: uv add bandit --dev"
+                "Install with: pip install bandit"
             )
             return []
 
