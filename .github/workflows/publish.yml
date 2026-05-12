@@ -40,11 +40,11 @@ jobs:
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: apps/cli/dist/
+          packages-dir: dist/
 
       - name: Upload build artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: apps/cli/dist/*
+          files: dist/*
           tag_name: ${{ github.ref_name }}
           generate_release_notes: true
