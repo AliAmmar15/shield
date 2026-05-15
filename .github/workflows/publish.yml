@@ -14,6 +14,8 @@ jobs:
     name: Build and publish velonus to PyPI
     runs-on: ubuntu-latest
     environment: pypi
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     permissions:
       contents: write  # required to upload GitHub Release artifacts
       id-token: write  # required for trusted publishing (OIDC) if used later
@@ -29,9 +31,13 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Build wheel and sdist
+      - name: Build wheel
         working-directory: apps/cli
-        run: uv build
+        # Build wheel directly from source, NOT via sdist.
+        # force-include paths (../../packages/scanner, ../../packages/normalizer)
+        # are relative to the source tree and would break if hatchling tried
+        # to resolve them inside an extracted sdist temp directory.
+        run: uv build --wheel
 
       # Publishes via PyPI Trusted Publisher (OIDC) — no API token required.
       # Set up at: https://pypi.org/manage/account/publishing/
