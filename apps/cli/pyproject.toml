@@ -66,6 +66,21 @@ dev = [
 [tool.hatch.build.targets.wheel]
 packages = ["shield"]
 
+# Bundle the monorepo-internal scanner and normalizer packages into the
+# velonus wheel so that `pip install velonus` is fully self-contained.
+# Neither package is published to PyPI — they must travel with the CLI.
+# force-include maps paths relative to this pyproject.toml (apps/cli/)
+# to their destination layout inside the built wheel / site-packages.
+[tool.hatch.build.targets.wheel.force-include]
+# scanner/  — full subdirectory copy (includes pipeline.py + detectors/)
+"../../packages/scanner/scanner" = "scanner/"
+# normalizer/  — individual files (package root uses package_dir mapping,
+#                so files live directly in packages/normalizer/, not a subdir)
+"../../packages/normalizer/__init__.py" = "normalizer/__init__.py"
+"../../packages/normalizer/models.py" = "normalizer/models.py"
+"../../packages/normalizer/normalizer.py" = "normalizer/normalizer.py"
+"../../packages/normalizer/deduplicator.py" = "normalizer/deduplicator.py"
+
 [tool.mypy]
 strict = true
 python_version = "3.12"
