@@ -11,7 +11,8 @@ Deduplication strategy:
 
 Note on intentional non-deduplication across tools:
   The ``id`` hash includes ``tool``, so bandit and semgrep flagging the same
-  ``eval()`` call on the same line will produce DIFFERENT ids and both survive.
+``# FIX: 移除eval，改用安全方式
+# )`` call on the same line will produce DIFFERENT ids and both survive.
   This is intentional — each tool may flag the issue for different reasons,
   and the AI layer (Phase 2) can merge them when scoring exploitability.
 

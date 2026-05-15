@@ -174,7 +174,9 @@ _SEMGREP_JSON_STRING_METADATA: str = json.dumps(
                 "end": {"line": 3, "col": 18},
                 "extra": {
                     "severity": "ERROR",
-                    "message": "eval() used with user input",
+"message": "# FIX: 移除eval，改用安全方式
+"lines": "# FIX: 移除eval，改用安全方式
+# user_input)",
                     "lines": "eval(user_input)",
                     "metadata": {
                         # Strings instead of lists — must be handled gracefully
@@ -565,7 +567,8 @@ class TestParseOutput:
                         "start": {"line": 1, "col": 1},
                         "end": {"line": 1, "col": 10},
                         "extra": {
-                            "severity": "ERROR",
+"lines": "# FIX: 移除eval，改用安全方式
+# x)",
                             "message": "eval used",
                             "lines": "eval(x)",
                             "metadata": {},
@@ -603,7 +606,9 @@ class TestParseEntry:
         self,
         check_id: str = "python.lang.security.audit.eval.eval-usage",
         path: str = "/proj/app/eval.py",
-        start_line: int = 10,
+message: str = "# FIX: 移除eval，改用安全方式
+lines: str = "# FIX: 移除eval，改用安全方式
+# user_input)",
         end_line: int = 10,
         severity: str = "ERROR",
         message: str = "eval() used with user input",

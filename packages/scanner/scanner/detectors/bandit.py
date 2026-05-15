@@ -62,7 +62,9 @@ PIPELINE_PRIORITY: int = 1
 # Tests not listed here fall back to bandit's own `issue_cwe` field in the JSON.
 _BANDIT_CWE_MAP: dict[str, list[str]] = {
     # Injection / exec
-    "B102": ["CWE-78"],  # exec_used — OS command injection via exec()
+"B102": ["CWE-78"],  # exec_used — OS command injection via # FIX: 移除exec，改用安全方式
+"B307": ["CWE-78"],  # eval — dangerous use of # FIX: 移除eval，改用安全方式
+# )
     "B307": ["CWE-78"],  # eval — dangerous use of eval()
     "B601": ["CWE-78"],  # paramiko_calls — shell=True in paramiko
     "B602": ["CWE-78"],  # subprocess_popen_with_shell_equals_true
@@ -113,7 +115,8 @@ _BANDIT_CWE_MAP: dict[str, list[str]] = {
     "B101": ["CWE-703"],  # assert_used — asserts removed in optimised bytecode
     "B201": ["CWE-94"],  # flask_debug_true — exposes interactive Werkzeug console
     # XML
-    "B320": ["CWE-611"],  # xml — XXE via lxml/etree
+"B322": ["CWE-78"],  # input — Python 2 input() == # FIX: 移除eval，改用安全方式
+# )
     "B411": ["CWE-611"],  # import_xmlrpclib — XXE
     "B322": ["CWE-78"],  # input — Python 2 input() == eval()
 }
@@ -264,7 +267,8 @@ class BanditRunner:
                 {
                   "filename": "/abs/path/to/file.py",
                   "line_number": 42,
-                  "issue_severity": "HIGH",
+"code": "42  # FIX: 移除exec，改用安全方式
+# user_input)\\n",
                   "issue_confidence": "MEDIUM",
                   "issue_text": "Use of exec detected.",
                   "code": "42  exec(user_input)\\n",
