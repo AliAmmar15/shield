@@ -320,7 +320,9 @@ class TestDeduplicationFilter:
         """
         # Use a stable but unique line per id so (file, line, cwe) keys differ.
         unique_line = line if line is not None else (hash(finding_id) % 9000 + 1000)
-        f = FindingNormalizer().normalize(SimpleRaw(tool=tool, rule_id=finding_id, line=unique_line))
+        f = FindingNormalizer().normalize(
+            SimpleRaw(tool=tool, rule_id=finding_id, line=unique_line)
+        )
         # Override the computed id so we can control the dedup key directly.
         object.__setattr__(f, "id", finding_id)
         return f
@@ -378,8 +380,24 @@ class TestDeduplicationFilter:
     def test_cross_tool_same_location_highest_severity_wins(self) -> None:
         """Pass-2: bandit HIGH and semgrep MEDIUM on the same file+line+CWE → only HIGH survives."""
         n = FindingNormalizer()
-        bandit_finding = n.normalize(SimpleRaw(tool="bandit", rule_id="B324", line=36, severity="HIGH", metadata={"cwe": ["CWE-327"]}))
-        semgrep_finding = n.normalize(SimpleRaw(tool="semgrep", rule_id="python.lang.security.weak-hash", line=36, severity="MEDIUM", metadata={"cwe": ["CWE-327"]}))
+        bandit_finding = n.normalize(
+            SimpleRaw(
+                tool="bandit",
+                rule_id="B324",
+                line=36,
+                severity="HIGH",
+                metadata={"cwe": ["CWE-327"]},
+            )
+        )
+        semgrep_finding = n.normalize(
+            SimpleRaw(
+                tool="semgrep",
+                rule_id="python.lang.security.weak-hash",
+                line=36,
+                severity="MEDIUM",
+                metadata={"cwe": ["CWE-327"]},
+            )
+        )
         result = DeduplicationFilter().deduplicate([bandit_finding, semgrep_finding])
         assert len(result) == 1
         assert result[0].severity == Severity.HIGH
