@@ -38,8 +38,10 @@ Usage::
 from __future__ import annotations
 
 import asyncio
+import fnmatch
 import logging
 import time
+from pathlib import PurePath
 from typing import TYPE_CHECKING
 
 from normalizer.deduplicator import DeduplicationFilter
@@ -61,6 +63,21 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Default path exclusion patterns
+# ---------------------------------------------------------------------------
+# Applied before normalization to strip test/config files from findings.
+# Patterns ending in '/' are directory exclusions (any path component matches).
+# Other patterns use PurePath.match() — right-to-left glob (e.g. conftest.py
+# matches anywhere in the tree; */test_*.py matches test_*.py in any subdir).
+
+DEFAULT_EXCLUDE_PATTERNS: list[str] = [
+    "tests/",
+    "test_*/",
+    "*/test_*.py",
+    "conftest.py",
+]
+
 # Union of all concrete parallel detector types.
 # Avoids Protocol structural compatibility errors in mypy strict mode while
 # preserving full type information for callers of _run_detector.
@@ -77,6 +94,54 @@ _SEVERITY_ORDER: dict[Severity, int] = {
     Severity.LOW: 3,
     Severity.INFO: 4,
 }
+
+
+def _is_excluded(file_path: str, target: Path, patterns: list[str]) -> bool:
+    """Return True if *file_path* matches any exclusion pattern.
+
+    Args:
+        file_path: Absolute path string from a RawFinding.
+        target:    The scan root passed to ScanPipeline.run().
+        patterns:  List of glob-style exclusion patterns.
+
+                   - Patterns ending in ``/``  are **directory** exclusions:
+                     any path component (directory name) matching the stripped
+                     pattern triggers exclusion.
+                     e.g. ``"tests/"`` excludes any file inside a ``tests/`` dir.
+
+                   - All other patterns use :meth:`pathlib.PurePath.match`,
+                     which anchors right-to-left:
+                     ``"conftest.py"``  matches anywhere in the tree.
+                     ``"*/test_*.py"``  matches ``test_*.py`` in any subdir.
+
+    Returns:
+        ``True`` if the file should be excluded; ``False`` otherwise.
+        Files outside the scan root are never excluded (returns ``False``).
+    """
+    from pathlib import Path as _Path
+
+    try:
+        rel = _Path(file_path).relative_to(target)
+    except ValueError:
+        # File is outside the scan target — do not exclude.
+        return False
+
+    rel_posix = rel.as_posix()  # forward-slash string for consistent matching
+    parts = rel.parts  # e.g. ("tests", "foo.py") for tests/foo.py
+
+    for pattern in patterns:
+        if pattern.endswith("/"):
+            # Directory exclusion — match any directory *component* in the path
+            # (exclude the final component, which is the filename).
+            dir_pat = pattern.rstrip("/")
+            if any(fnmatch.fnmatch(part, dir_pat) for part in parts[:-1]):
+                return True
+        else:
+            # File pattern — PurePath.match() is right-to-left glob.
+            if PurePath(rel_posix).match(pattern):
+                return True
+
+    return False
 
 
 def _severity_sort_key(finding: NormalizedFinding) -> int:
@@ -113,8 +178,17 @@ class ScanPipeline:
         findings = await pipeline.run(Path("./my-project"), verbose=True)
     """
 
-    def __init__(self) -> None:
-        """Initialize the pipeline with all five detector instances and support classes."""
+    def __init__(self, exclude: list[str] | None = None) -> None:
+        """Initialize the pipeline with all five detector instances and support classes.
+
+        Args:
+            exclude: Glob-style exclusion patterns applied before normalization.
+                     Defaults to :data:`DEFAULT_EXCLUDE_PATTERNS` when ``None``.
+                     Pass an empty list ``[]`` to disable all exclusions.
+        """
+        # Exclusion patterns — resolved once at construction time.
+        self._exclude: list[str] = DEFAULT_EXCLUDE_PATTERNS if exclude is None else exclude
+
         # Detectors — instantiated once per pipeline; all are stateless
         self._secrets = SecretsDetector()
         self._bandit = BanditRunner()
@@ -190,6 +264,19 @@ class ScanPipeline:
                 )
             else:
                 all_raw.extend(result)
+
+        # ------------------------------------------------------------------
+        # Exclusion filter — applied before normalization
+        # ------------------------------------------------------------------
+        if self._exclude:
+            pre_filter = len(all_raw)
+            all_raw = [
+                r for r in all_raw if not _is_excluded(r.file, target, self._exclude)
+            ]
+            excluded_count = pre_filter - len(all_raw)
+            if excluded_count:
+                log_fn = logger.info if verbose else logger.debug
+                log_fn("Exclusion filter removed %d finding(s) from excluded paths.", excluded_count)
 
         # ------------------------------------------------------------------
         # Post-processing: Normalize → Deduplicate → Sort

@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING, Annotated
 import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from scanner.pipeline import ScanPipeline
+from scanner.pipeline import DEFAULT_EXCLUDE_PATTERNS, ScanPipeline
 
 from shield.core.output import Severity
 from shield.formatters.sarif import to_sarif, write_sarif
@@ -163,6 +163,33 @@ def _prompt_optional_tools() -> None:
     marker.touch()
 
 
+def _load_config_excludes() -> list[str]:
+    """Read exclusion patterns from ~/.velonus/config.toml if it exists.
+
+    Expected TOML structure::
+
+        [scan]
+        exclude = ["tests/", "conftest.py", "mydir/"]
+
+    Returns an empty list when the file is missing, malformed, or has no
+    ``[scan] exclude`` key.
+    """
+    import tomllib
+
+    config_path = Path.home() / ".velonus" / "config.toml"
+    if not config_path.exists():
+        return []
+    try:
+        with config_path.open("rb") as fh:
+            data = tomllib.load(fh)
+        raw = data.get("scan", {}).get("exclude", [])
+        if isinstance(raw, list):
+            return [str(p) for p in raw]
+    except Exception:  # noqa: BLE001 — malformed TOML silently ignored
+        pass
+    return []
+
+
 class OutputFormat(StrEnum):
     """Supported output formats for scan results."""
 
@@ -264,6 +291,17 @@ def scan(
             help="Output path for the SARIF file. Implies --sarif when set.",
         ),
     ] = None,
+    exclude: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--exclude",
+            "-e",
+            help=(
+                "Glob pattern to exclude from results. Repeatable. "
+                "e.g. --exclude migrations/ --exclude */generated_*.py"
+            ),
+        ),
+    ] = None,
 ) -> None:
     """Run a security scan on the given path.
 
@@ -271,6 +309,14 @@ def scan(
     Secrets run first (synchronous); all other tools run in parallel.
     """
     target = _resolve_target(path)
+
+    # Build exclusion pattern list: defaults + config file + CLI flags.
+    # Config file patterns are additive on top of the defaults.
+    # CLI --exclude patterns are further additive on top of both.
+    exclude_patterns: list[str] = list(DEFAULT_EXCLUDE_PATTERNS)
+    exclude_patterns.extend(_load_config_excludes())
+    if exclude:
+        exclude_patterns.extend(exclude)
 
     # Route all UI output to stderr when JSON format is active so that stdout
     # contains only the JSON array — making it safely pipeable to jq / json.tool.
@@ -303,7 +349,7 @@ def scan(
         # Phase 1: full parallel pipeline.
         # ScanPipeline.run() is async; asyncio.run() bridges to this sync CLI context.
         # verbose=True passes per-detector timing to the pipeline logger.
-        pipeline = ScanPipeline()
+        pipeline = ScanPipeline(exclude=exclude_patterns)
         findings = asyncio.run(pipeline.run(target, verbose=verbose))
 
         progress.update(task, description="[green]Scan complete.[/green]")
