@@ -9,7 +9,8 @@ Coverage targets:
                                       CWE/OWASP fallbacks, line_end, field passthrough
   FindingNormalizer.normalize_all() — list processing, error isolation
   DeduplicationFilter.deduplicate() — first-occurrence wins, order preservation,
-                                      empty input, no-duplicate passthrough
+                                      empty input, no-duplicate passthrough,
+                                      cross-tool same-location highest-severity wins
 """
 
 from __future__ import annotations
@@ -310,10 +311,18 @@ class TestDeduplicationFilter:
         self,
         finding_id: str,
         tool: str = "bandit",
-        line: int = 1,
+        line: int | None = None,
     ) -> NormalizedFinding:
-        """Build a minimal NormalizedFinding with a pre-set id for testing."""
-        f = FindingNormalizer().normalize(SimpleRaw(tool=tool, rule_id=finding_id, line=line))
+        """Build a minimal NormalizedFinding with a pre-set id for testing.
+
+        Each call uses a unique line derived from the finding_id hash so that
+        pass-2 location dedup does not collapse unrelated findings.
+        """
+        # Use a stable but unique line per id so (file, line, cwe) keys differ.
+        unique_line = line if line is not None else (hash(finding_id) % 9000 + 1000)
+        f = FindingNormalizer().normalize(
+            SimpleRaw(tool=tool, rule_id=finding_id, line=unique_line)
+        )
         # Override the computed id so we can control the dedup key directly.
         object.__setattr__(f, "id", finding_id)
         return f
@@ -367,3 +376,29 @@ class TestDeduplicationFilter:
     def test_single_finding_is_kept(self) -> None:
         f = self._make_finding("solo")
         assert DeduplicationFilter().deduplicate([f]) == [f]
+
+    def test_cross_tool_same_location_highest_severity_wins(self) -> None:
+        """Pass-2: bandit HIGH and semgrep MEDIUM on the same file+line+CWE → only HIGH survives."""
+        n = FindingNormalizer()
+        bandit_finding = n.normalize(
+            SimpleRaw(
+                tool="bandit",
+                rule_id="B324",
+                line=36,
+                severity="HIGH",
+                metadata={"cwe": ["CWE-327"]},
+            )
+        )
+        semgrep_finding = n.normalize(
+            SimpleRaw(
+                tool="semgrep",
+                rule_id="python.lang.security.weak-hash",
+                line=36,
+                severity="MEDIUM",
+                metadata={"cwe": ["CWE-327"]},
+            )
+        )
+        result = DeduplicationFilter().deduplicate([bandit_finding, semgrep_finding])
+        assert len(result) == 1
+        assert result[0].severity == Severity.HIGH
+        assert result[0].tool == "bandit"
