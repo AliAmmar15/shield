@@ -270,13 +270,13 @@ class ScanPipeline:
         # ------------------------------------------------------------------
         if self._exclude:
             pre_filter = len(all_raw)
-            all_raw = [
-                r for r in all_raw if not _is_excluded(r.file, target, self._exclude)
-            ]
+            all_raw = [r for r in all_raw if not _is_excluded(r.file, target, self._exclude)]
             excluded_count = pre_filter - len(all_raw)
             if excluded_count:
                 log_fn = logger.info if verbose else logger.debug
-                log_fn("Exclusion filter removed %d finding(s) from excluded paths.", excluded_count)
+                log_fn(
+                    "Exclusion filter removed %d finding(s) from excluded paths.", excluded_count
+                )
 
         # ------------------------------------------------------------------
         # Post-processing: Normalize → Deduplicate → Sort

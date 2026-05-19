@@ -25,6 +25,7 @@ if TYPE_CHECKING:
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture()
 def project_root(tmp_path: Path) -> Path:
     """Return a temporary directory representing a project root."""
@@ -215,9 +216,7 @@ class TestScanPipelineExclusion:
 
     def test_custom_exclude_migrations(self, project_root: Path) -> None:
         raw = _make_raw(str(project_root / "migrations" / "0001_initial.py"))
-        results = self._run_pipeline_with_raws(
-            project_root, [raw], exclude=["migrations/"]
-        )
+        results = self._run_pipeline_with_raws(project_root, [raw], exclude=["migrations/"])
         assert results == []
 
     def test_custom_exclude_additive(self, project_root: Path) -> None:
