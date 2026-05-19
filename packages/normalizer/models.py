@@ -72,7 +72,7 @@ class NormalizedFinding:
     message: str
     fix_available: bool = False
     suppressed: bool = False
-    first_seen: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    first_seen: datetime = field(default_factory=lambda: datetime.now(timezone.utc))  # noqa: UP017
     # AI fields — populated in Phase 2 when ai-engine is wired in
     exploitability_score: float | None = None
     ai_priority: int | None = None
